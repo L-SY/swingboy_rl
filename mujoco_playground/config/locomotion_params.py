@@ -158,6 +158,26 @@ def brax_ppo_config(
       "SpotJoystickGaitTracking",
   ):
     pass  # use default config
+  elif env_name in (
+      "SwingboyJoystickFlatTerrain",
+      "SwingboyJoystickRoughTerrain",
+  ):
+    rl_config.num_timesteps = 100_000_000
+    rl_config.num_evals = 10
+    rl_config.num_envs = 4096
+    rl_config.unroll_length = 20
+    rl_config.num_minibatches = 16
+    rl_config.num_updates_per_batch = 4
+    rl_config.discounting = 0.97
+    rl_config.learning_rate = 3e-4
+    rl_config.entropy_cost = 0.01
+    rl_config.clipping_epsilon = 0.2
+    rl_config.network_factory = config_dict.create(
+        policy_hidden_layer_sizes=(256, 256, 128),
+        value_hidden_layer_sizes=(256, 256, 128),
+        policy_obs_key="state",
+        value_obs_key="privileged_state",
+    )
   else:
     raise ValueError(f"Unsupported env: {env_name}")
 

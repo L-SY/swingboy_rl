@@ -1,0 +1,117 @@
+<mujoco model="swingboy">
+  <compiler angle="radian" autolimits="true"/>
+
+  <default>
+    <joint armature="0.01" damping="0.08" limited="true"/>
+    <geom solimp="0.9 0.95 0.001" solref="0.02 1" contype="0" conaffinity="1"/>
+    <default class="visual">
+      <geom type="mesh" contype="0" conaffinity="0" group="2" rgba="0.7 0.72 0.76 1"/>
+    </default>
+    <default class="collision">
+      <geom group="3" rgba="0.2 0.6 0.9 0.25"/>
+    </default>
+  </default>
+
+  <asset>
+    <mesh name="base_link_visual_00" file="base_link_visual_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="base_link_visual_01" file="base_link_visual_01.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="base_link_visual_02" file="base_link_visual_02.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="left_hip_knee_link_visual" file="left_hip_knee_link_visual.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="left_knee_wheel_link_visual" file="left_knee_wheel_link_visual.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="left_wheel_visual" file="left_wheel_visual.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="right_hip_knee_link_visual" file="right_hip_knee_link_visual.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="right_knee_wheel_link_visual" file="right_knee_wheel_link_visual.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="right_wheel_visual" file="right_wheel_visual.stl" scale="0.001 0.001 0.001"/>
+  </asset>
+
+  <worldbody>
+    <body name="base_link" pos="0 0 0.3">
+      <freejoint name="root"/>
+      <inertial pos="0.023194022 -0.005961871 0.034984685" mass="5.6642671"
+        fullinertia="0.017013427 0.030038808 0.026847641 -0.000065806 -0.006626058 -0.000003289"/>
+      <geom name="base_visual_00" class="visual" type="mesh" mesh="base_link_visual_00" rgba="0.7 0.72 0.76 1"/>
+      <geom name="base_visual_01" class="visual" type="mesh" mesh="base_link_visual_01" rgba="0.7 0.72 0.76 1"/>
+      <geom name="base_visual_02" class="visual" type="mesh" mesh="base_link_visual_02" rgba="0.7 0.72 0.76 1"/>
+      <geom name="base_collision_00" class="collision" type="mesh" mesh="base_link_visual_00"/>
+      <geom name="base_collision_01" class="collision" type="mesh" mesh="base_link_visual_01"/>
+      <geom name="base_collision_02" class="collision" type="mesh" mesh="base_link_visual_02"/>
+      <site name="imu" pos="0 0 0" size="0.003" rgba="0 0 0 0"/>
+
+      <body name="left_hip_knee_link" pos="-0.046391 -0.120369 -0.016">
+        <joint name="left_hip" type="hinge" axis="0 1 0" range="-2.7 2.7"/>
+        <inertial pos="-0.022752868 -0.03439328 0.107589179" mass="2.86443343"
+          fullinertia="0.033592999 0.035048815 0.003078528 0.000014913 0.006785996 -0.000008147"/>
+        <geom name="left_hip_visual" class="visual" type="mesh" mesh="left_hip_knee_link_visual"
+          pos="0.046391 0.120369 0.016"/>
+        <geom name="left_hip_collision" class="collision" type="mesh" mesh="left_hip_knee_link_visual"
+          pos="0.046391 0.120369 0.016"/>
+
+        <body name="left_knee_wheel_link" pos="-0.045676 0 0.215206">
+          <joint name="left_knee" type="hinge" axis="0 -1 0" range="-2.7 2.7"/>
+          <inertial pos="0.110174318 0.004394033 -0.154769611" mass="1.81513349"
+            fullinertia="0.007996185 0.011928148 0.004366643 0.000095645 0.005170151 -0.000128395"/>
+          <geom name="left_knee_visual" class="visual" type="mesh" mesh="left_knee_wheel_link_visual"
+            pos="0.092067 0.120369 -0.199206"/>
+          <geom name="left_knee_collision" class="collision" type="mesh" mesh="left_knee_wheel_link_visual"
+            pos="0.092067 0.120369 -0.199206"/>
+
+          <body name="left_wheel" pos="0.139214 -0.0225 -0.195497">
+            <joint name="left_wheel" type="hinge" axis="0 -1 0" limited="false" damping="0.02" armature="0.002"/>
+            <inertial pos="0.000000502 -0.003160987 -0.000000426" mass="0.935458605"
+              fullinertia="0.001224995 0.002338299 0.001225494 0 0 0"/>
+            <geom name="left_wheel_visual" class="visual" type="mesh" mesh="left_wheel_visual"
+              pos="-0.047147 0.142869 -0.003709"/>
+            <geom name="left_wheel_collision" class="collision" type="mesh" mesh="left_wheel_visual"
+              pos="-0.047147 0.142869 -0.003709" condim="3" friction="1.2 0.02 0.001"/>
+          </body>
+        </body>
+      </body>
+
+      <body name="right_hip_knee_link" pos="-0.046391 0.110369 -0.016">
+        <joint name="right_hip" type="hinge" axis="0 1 0" range="-2.7 2.7"/>
+        <inertial pos="-0.022728092 0.034458387 0.107287114" mass="2.85424007"
+          fullinertia="0.033520469 0.034981628 0.003071209 -0.000015361 0.006784224 0.000013569"/>
+        <geom name="right_hip_visual" class="visual" type="mesh" mesh="right_hip_knee_link_visual"
+          pos="0.046391 -0.110369 0.016"/>
+        <geom name="right_hip_collision" class="collision" type="mesh" mesh="right_hip_knee_link_visual"
+          pos="0.046391 -0.110369 0.016"/>
+
+        <body name="right_knee_wheel_link" pos="-0.045741 0 0.215192">
+          <joint name="right_knee" type="hinge" axis="0 -1 0" range="-2.7 2.7"/>
+          <inertial pos="0.122975677 -0.00389461 -0.172485992" mass="1.42195298"
+            fullinertia="0.004595036 0.006799078 0.002630821 -0.000052158 0.002835196 0.000072823"/>
+          <geom name="right_knee_visual" class="visual" type="mesh" mesh="right_knee_wheel_link_visual"
+            pos="0.092132 -0.110369 -0.199192"/>
+          <geom name="right_knee_collision" class="collision" type="mesh" mesh="right_knee_wheel_link_visual"
+            pos="0.092132 -0.110369 -0.199192"/>
+
+          <body name="right_wheel" pos="0.139273 0.0225 -0.195455">
+            <joint name="right_wheel" type="hinge" axis="0 1 0" limited="false" damping="0.02" armature="0.002"/>
+            <inertial pos="0.000000517 0.003161084 -0.000000164" mass="0.935458605"
+              fullinertia="0.001225095 0.002338299 0.001225394 0 0 0"/>
+            <geom name="right_wheel_visual" class="visual" type="mesh" mesh="right_wheel_visual"
+              pos="-0.047141 -0.132869 -0.003737"/>
+            <geom name="right_wheel_collision" class="collision" type="mesh" mesh="right_wheel_visual"
+              pos="-0.047141 -0.132869 -0.003737" condim="3" friction="1.2 0.02 0.001"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="left_hip_pos" joint="left_hip" kp="55" kv="2.0" ctrlrange="-2.6 2.6"/>
+    <position name="left_knee_pos" joint="left_knee" kp="55" kv="2.0" ctrlrange="-2.6 2.6"/>
+    <position name="right_hip_pos" joint="right_hip" kp="55" kv="2.0" ctrlrange="-2.6 2.6"/>
+    <position name="right_knee_pos" joint="right_knee" kp="55" kv="2.0" ctrlrange="-2.6 2.6"/>
+    <velocity name="left_wheel_vel" joint="left_wheel" kv="2.2" ctrlrange="-20 20"/>
+    <velocity name="right_wheel_vel" joint="right_wheel" kv="2.2" ctrlrange="-20 20"/>
+  </actuator>
+
+  <sensor>
+    <gyro name="gyro" site="imu"/>
+    <velocimeter name="local_linvel" site="imu"/>
+    <framelinvel name="global_linvel" objtype="site" objname="imu"/>
+    <frameangvel name="global_angvel" objtype="site" objname="imu"/>
+  </sensor>
+</mujoco>

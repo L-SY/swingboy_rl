@@ -38,6 +38,7 @@ from mujoco_playground._src.locomotion.op3 import joystick as op3_joystick
 from mujoco_playground._src.locomotion.spot import getup as spot_getup
 from mujoco_playground._src.locomotion.spot import joystick as spot_joystick
 from mujoco_playground._src.locomotion.spot import joystick_gait_tracking as spot_joystick_gait_tracking
+from mujoco_playground._src.locomotion.swingboy import joystick as swingboy_joystick
 from mujoco_playground._src.locomotion.t1 import joystick as t1_joystick
 from mujoco_playground._src.locomotion.t1 import randomize as t1_randomize
 
@@ -78,6 +79,12 @@ _envs = {
     "SpotJoystickGaitTracking": (
         spot_joystick_gait_tracking.JoystickGaitTracking
     ),
+    "SwingboyJoystickFlatTerrain": functools.partial(
+        swingboy_joystick.Joystick, task="flat_terrain"
+    ),
+    "SwingboyJoystickRoughTerrain": functools.partial(
+        swingboy_joystick.Joystick, task="rough_terrain"
+    ),
     "T1JoystickFlatTerrain": functools.partial(
         t1_joystick.Joystick, task="flat_terrain"
     ),
@@ -108,6 +115,8 @@ _cfgs = {
     "SpotFlatTerrainJoystick": spot_joystick.default_config,
     "SpotGetup": spot_getup.default_config,
     "SpotJoystickGaitTracking": spot_joystick_gait_tracking.default_config,
+    "SwingboyJoystickFlatTerrain": swingboy_joystick.default_config,
+    "SwingboyJoystickRoughTerrain": swingboy_joystick.default_config,
     "T1JoystickFlatTerrain": t1_joystick.default_config,
     "T1JoystickRoughTerrain": t1_joystick.default_config,
 }
@@ -179,7 +188,8 @@ def load(
   Returns:
       An instance of the environment.
   """
-  mjx_env.ensure_menagerie_exists()  # Ensure menagerie exists when environment is loaded.
+  if not env_name.startswith("Swingboy"):
+    mjx_env.ensure_menagerie_exists()  # Ensure menagerie exists when needed.
   if env_name not in _envs:
     raise ValueError(
         f"Env '{env_name}' not found. Available envs: {_cfgs.keys()}"
