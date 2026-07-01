@@ -7,3 +7,9 @@ mujoco_menagerie
 checkpoints/
 logs
 .mujoco_playground_asset_cache/
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+.pytest_cache/
+*.bag/
+*.db3

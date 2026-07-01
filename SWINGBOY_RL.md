@@ -11,6 +11,11 @@ wheel-legged robot environment under `mujoco_playground/_src/locomotion/swingboy
   STL. `base_link` is split into three chunks because MuJoCo limits each STL
   mesh to fewer than 200,000 faces.
 - The same STL meshes are also used for collision geometry, per project setup.
+- `ros2_ws`: ROS 2 Lyrical + Gazebo Sim workspace for deployment tests with
+  STL visual/collision geometry, `ros2_control`, an ONNX RL controller, and
+  rough Gazebo test terrain.
+- `policies`: exported deployment policies. `swingboy_rough_latest.onnx` is the
+  expected ROS controller input after IsaacLab export.
 
 Training outputs are intentionally not tracked:
 
@@ -18,6 +23,81 @@ Training outputs are intentionally not tracked:
 - `checkpoints/`
 - `.venv/`
 - MuJoCo asset caches
+
+## Current IsaacLab Training Path
+
+The active training run uses IsaacLab, not MuJoCo Playground:
+
+```bash
+cd /home/lsy/桌面/RL/IsaacLab
+PYTHONUNBUFFERED=1 TERM=xterm /home/lsy/桌面/RL/env_isaaclab/bin/isaaclab \
+  -p scripts/reinforcement_learning/rsl_rl/train.py \
+  --task Isaac-Velocity-RoughMixed-Swingboy-v0 \
+  --num_envs 2048 \
+  --max_iterations 600 \
+  --device cuda:0 \
+  --headless \
+  --resume \
+  --load_run 2026-07-01_17-47-16_wheel_drive_fixed_pose_rough_mixed_stage2_from_flat \
+  --checkpoint model_1050_logstd_resetopt.pt \
+  --run_name logstd_rough_continue_from_1050
+```
+
+Important IsaacLab notes:
+
+- The robot asset uses original STL visual geometry and the same STL files for
+  collision.
+- Wheel joints are continuous velocity-controlled joints; leg joints are
+  position-controlled revolute joints with `[-2.7, 2.7]` rad limits.
+- RSL-RL exploration noise is configured with log standard deviation to avoid
+  the scalar `std` parameter becoming negative late in training.
+- The reward targets velocity tracking and a base height of `0.30 m`.
+
+After training, export the selected checkpoint:
+
+```bash
+scripts/export_isaaclab_swingboy_policy.sh \
+  /home/lsy/桌面/RL/IsaacLab/logs/rsl_rl/swingboy_rough_mixed/<run>/model_<iter>.pt
+```
+
+The script copies the exported ONNX policy to:
+
+```bash
+policies/swingboy_rough_latest.onnx
+```
+
+Current exported policy:
+
+- IsaacLab checkpoint:
+  `/home/lsy/桌面/RL/IsaacLab/logs/rsl_rl/swingboy_rough_mixed/2026-07-01_18-09-56_logstd_rough_continue_from_1050/model_1649.pt`
+- Final training metrics at iteration 1649: mean reward `52.76`, mean episode
+  length `1000`, `error_vel_xy=0.2154`, `error_vel_yaw=0.3983`, and
+  `base_height_l2=-0.0012`.
+- Exported ONNX:
+  `policies/swingboy_rough_latest.onnx`
+
+## ROS 2 / Gazebo Sim
+
+Build and smoke test:
+
+```bash
+cd /home/lsy/桌面/RL/swingboy_rl/ros2_ws
+source /opt/ros/lyrical/setup.bash
+colcon build --symlink-install
+source install/setup.bash
+./src/swingboy_tests/scripts/run_gazebo_smoke.sh
+```
+
+Run the RL command test after exporting a policy:
+
+```bash
+./src/swingboy_tests/scripts/run_gazebo_rl_test.sh
+```
+
+The Gazebo controller starts only after the leg and wheel controllers are
+active. It warms up from the current Gazebo joint state to the IsaacLab default
+standing pose before running the ONNX policy, then clips and low-pass filters
+actions before sending them to `ros2_control`.
 
 ## Environment Setup
 

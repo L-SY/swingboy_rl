@@ -1,0 +1,28 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    swingboy_leg_controller:
+      type: forward_command_controller/ForwardCommandController
+
+    swingboy_wheel_controller:
+      type: forward_command_controller/ForwardCommandController
+
+swingboy_leg_controller:
+  ros__parameters:
+    joints:
+      - left_hip
+      - left_knee
+      - right_hip
+      - right_knee
+    interface_name: position
+
+swingboy_wheel_controller:
+  ros__parameters:
+    joints:
+      - left_wheel
+      - right_wheel
+    interface_name: velocity

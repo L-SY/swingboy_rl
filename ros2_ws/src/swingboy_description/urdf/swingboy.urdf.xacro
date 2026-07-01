@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="swingboy">
+  <xacro:arg name="use_ros2_control" default="true"/>
+  <xacro:arg name="controllers_file" default="$(find swingboy_bringup)/config/controllers.yaml"/>
+
+  <xacro:property name="mesh_scale" value="0.001 0.001 0.001"/>
+
+  <xacro:macro name="mesh_visual_collision" params="mesh xyz rpy">
+    <visual>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <geometry>
+        <mesh filename="package://swingboy_description/meshes/${mesh}" scale="${mesh_scale}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <geometry>
+        <mesh filename="package://swingboy_description/meshes/${mesh}" scale="${mesh_scale}"/>
+      </geometry>
+    </collision>
+  </xacro:macro>
+
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.023194022 -0.005961871 0.034984685" rpy="0 0 0"/>
+      <mass value="5.6642671"/>
+      <inertia ixx="0.017013427" iyy="0.030038808" izz="0.026847641"
+               ixy="-6.5806e-05" iyz="-3.289e-06" ixz="-0.006626058"/>
+    </inertial>
+    <xacro:mesh_visual_collision mesh="base_link.stl" xyz="0 0 0" rpy="0 0 0"/>
+  </link>
+
+  <link name="left_hip_knee_link">
+    <inertial>
+      <origin xyz="-0.022752868 -0.03439328 0.107589179" rpy="0 0 0"/>
+      <mass value="2.86443343"/>
+      <inertia ixx="0.033592999" iyy="0.035048815" izz="0.003078528"
+               ixy="1.4913e-05" iyz="-8.147e-06" ixz="0.006785996"/>
+    </inertial>
+    <xacro:mesh_visual_collision mesh="left_hip_knee_link.stl" xyz="0.046391 0.120369 0.016" rpy="0 0 0"/>
+  </link>
+
+  <link name="right_hip_knee_link">
+    <inertial>
+      <origin xyz="-0.022728092 0.034458387 0.107287114" rpy="0 0 0"/>
+      <mass value="2.85424007"/>
+      <inertia ixx="0.033520469" iyy="0.034981628" izz="0.003071209"
+               ixy="-1.5361e-05" iyz="1.3569e-05" ixz="0.006784224"/>
+    </inertial>
+    <xacro:mesh_visual_collision mesh="right_hip_knee_link.stl" xyz="0.046391 -0.110369 0.016" rpy="0 0 0"/>
+  </link>
+
+  <link name="left_knee_wheel_link">
+    <inertial>
+      <origin xyz="0.110174318 0.004394033 -0.154769611" rpy="0 0 0"/>
+      <mass value="1.81513349"/>
+      <inertia ixx="0.007996185" iyy="0.011928148" izz="0.004366643"
+               ixy="9.5645e-05" iyz="-0.000128395" ixz="0.005170151"/>
+    </inertial>
+    <xacro:mesh_visual_collision mesh="left_knee_wheel_link.stl" xyz="0.092067 0.120369 -0.199206" rpy="0 0 0"/>
+  </link>
+
+  <link name="right_knee_wheel_link">
+    <inertial>
+      <origin xyz="0.122975677 -0.00389461 -0.172485992" rpy="0 0 0"/>
+      <mass value="1.42195298"/>
+      <inertia ixx="0.004595036" iyy="0.006799078" izz="0.002630821"
+               ixy="-5.2158e-05" iyz="7.2823e-05" ixz="0.002835196"/>
+    </inertial>
+    <xacro:mesh_visual_collision mesh="right_knee_wheel_link.stl" xyz="0.092132 -0.110369 -0.199192" rpy="0 0 0"/>
+  </link>
+
+  <link name="left_wheel_link">
+    <inertial>
+      <origin xyz="5.02e-07 -0.003160987 -4.26e-07" rpy="0 0 0"/>
+      <mass value="0.935458605"/>
+      <inertia ixx="0.001224995" iyy="0.002338299" izz="0.001225494"
+               ixy="0" iyz="0" ixz="-2.03e-07"/>
+    </inertial>
+    <xacro:mesh_visual_collision mesh="left_wheel.stl" xyz="-0.047147 0.142869 -0.003709" rpy="0 0 0"/>
+  </link>
+
+  <link name="right_wheel_link">
+    <inertial>
+      <origin xyz="5.17e-07 0.003161084 -1.64e-07" rpy="0 0 0"/>
+      <mass value="0.935458605"/>
+      <inertia ixx="0.001225095" iyy="0.002338299" izz="0.001225394"
+               ixy="0" iyz="0" ixz="-4.31e-07"/>
+    </inertial>
+    <xacro:mesh_visual_collision mesh="right_wheel.stl" xyz="-0.047141 -0.132869 -0.003737" rpy="0 0 0"/>
+  </link>
+
+  <joint name="left_hip" type="revolute">
+    <origin xyz="-0.046391 -0.120369 -0.016" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="left_hip_knee_link"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.7" upper="2.7" effort="80.0" velocity="20.0"/>
+    <dynamics damping="0.08" friction="0.0"/>
+  </joint>
+
+  <joint name="right_hip" type="revolute">
+    <origin xyz="-0.046391 0.110369 -0.016" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="right_hip_knee_link"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.7" upper="2.7" effort="80.0" velocity="20.0"/>
+    <dynamics damping="0.08" friction="0.0"/>
+  </joint>
+
+  <joint name="left_knee" type="revolute">
+    <origin xyz="-0.045676 0 0.215206" rpy="0 0 0"/>
+    <parent link="left_hip_knee_link"/>
+    <child link="left_knee_wheel_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-2.7" upper="2.7" effort="80.0" velocity="20.0"/>
+    <dynamics damping="0.08" friction="0.0"/>
+  </joint>
+
+  <joint name="right_knee" type="revolute">
+    <origin xyz="-0.045741 0 0.215192" rpy="0 0 0"/>
+    <parent link="right_hip_knee_link"/>
+    <child link="right_knee_wheel_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-2.7" upper="2.7" effort="80.0" velocity="20.0"/>
+    <dynamics damping="0.08" friction="0.0"/>
+  </joint>
+
+  <joint name="left_wheel" type="continuous">
+    <origin xyz="0.139214 -0.0225 -0.195497" rpy="0 0 0"/>
+    <parent link="left_knee_wheel_link"/>
+    <child link="left_wheel_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit effort="50.0" velocity="40.0"/>
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+
+  <joint name="right_wheel" type="continuous">
+    <origin xyz="0.139273 0.0225 -0.195455" rpy="0 0 0"/>
+    <parent link="right_knee_wheel_link"/>
+    <child link="right_wheel_link"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="50.0" velocity="40.0"/>
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+
+  <gazebo reference="left_wheel_link">
+    <mu1>1.2</mu1>
+    <mu2>1.2</mu2>
+  </gazebo>
+  <gazebo reference="right_wheel_link">
+    <mu1>1.2</mu1>
+    <mu2>1.2</mu2>
+  </gazebo>
+
+  <gazebo reference="base_link">
+    <sensor name="base_imu" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <topic>/swingboy/imu</topic>
+    </sensor>
+  </gazebo>
+
+  <xacro:if value="$(arg use_ros2_control)">
+    <ros2_control name="GazeboSimSystem" type="system">
+      <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+      </hardware>
+
+      <joint name="left_hip">
+        <command_interface name="position">
+          <param name="min">-2.7</param>
+          <param name="max">2.7</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="left_knee">
+        <command_interface name="position">
+          <param name="min">-2.7</param>
+          <param name="max">2.7</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="right_hip">
+        <command_interface name="position">
+          <param name="min">-2.7</param>
+          <param name="max">2.7</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="right_knee">
+        <command_interface name="position">
+          <param name="min">-2.7</param>
+          <param name="max">2.7</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="left_wheel">
+        <command_interface name="velocity">
+          <param name="min">-40.0</param>
+          <param name="max">40.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="right_wheel">
+        <command_interface name="velocity">
+          <param name="min">-40.0</param>
+          <param name="max">40.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+    </ros2_control>
+
+    <gazebo>
+      <plugin filename="libgz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(arg controllers_file)</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+</robot>
