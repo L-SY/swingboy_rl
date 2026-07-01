@@ -86,7 +86,19 @@ uv --no-config run train-jax-ppo \
 
 ## Longer Training Pattern
 
-Train flat first, then fine-tune rough terrain from the flat checkpoint.
+Train flat first, then fine-tune rough terrain from the flat checkpoint:
+
+```bash
+scripts/train_swingboy_chain.sh
+```
+
+For a shorter trial, override the step counts:
+
+```bash
+FLAT_STEPS=100000 ROUGH_STEPS=100000 scripts/train_swingboy_chain.sh
+```
+
+The equivalent manual commands are:
 
 ```bash
 uv --no-config run train-jax-ppo \
@@ -130,4 +142,3 @@ uv --no-config run train-jax-ppo \
   meshes.
 - If training becomes unstable, the first thing to tune is wheel action scale,
   command range, and collision mesh complexity.
-
