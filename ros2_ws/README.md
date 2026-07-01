@@ -8,6 +8,7 @@ Packages:
 - `swingboy_description`: STL visual/collision robot model with `ros2_control` interfaces.
 - `swingboy_bringup`: Gazebo Sim launch, controller configuration, and rough test world.
 - `swingboy_rl_controller`: Python ONNX policy runner that sends commands to ros2_control.
+- `swingboy_height_scan_publisher`: IsaacLab-style height scan publisher for `rough_test.sdf`.
 - `swingboy_tests`: smoke-test scripts for launching the simulation.
 
 Build:
@@ -43,10 +44,13 @@ low-pass filter before publishing to `ros2_control`. The defaults are:
 - `leg_action_clip=2.0`
 - `wheel_action_clip=3.4`
 - `action_filter_alpha=0.35`
+- `leg_target_rate_limit=4.0 rad/s`
 
-If no `/swingboy/height_scan` publisher is present, the controller fills the
-176 height-scan values with `-0.2`, matching the approximate IsaacLab flat-ground
-value for a `0.30 m` base height and `0.5 m` scan offset.
+The launch file starts `swingboy_height_scan_publisher` by default. It publishes
+176 height-scan values for the procedural geometry in `rough_test.sdf`, using
+the IsaacLab convention `base_z - terrain_z - 0.5`. If no
+`/swingboy/height_scan` publisher is present, the controller falls back to
+`-0.2`, matching the approximate flat-ground value for a `0.30 m` base height.
 
 Smoke test:
 
@@ -62,5 +66,5 @@ RL command test after exporting a policy:
 
 The rough Gazebo world is `swingboy_bringup/worlds/rough_test.sdf`. It contains
 flat ground, shallow ramps, small uneven blocks, and a skate-style bank. The
-current ROS controller accepts `/cmd_vel` and runs the exported IsaacLab policy
-through ONNX Runtime.
+current ROS controller accepts `/cmd_vel`, consumes `/swingboy/height_scan`, and
+runs the exported IsaacLab policy through ONNX Runtime.

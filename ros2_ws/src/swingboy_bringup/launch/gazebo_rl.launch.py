@@ -139,6 +139,20 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
+    height_scan_publisher = Node(
+        package="swingboy_rl_controller",
+        executable="swingboy_height_scan_publisher",
+        name="swingboy_height_scan_publisher",
+        output="screen",
+        condition=IfCondition(LaunchConfiguration("use_height_scan")),
+        parameters=[
+            {
+                "use_sim_time": True,
+                "publish_rate_hz": LaunchConfiguration("height_scan_rate"),
+            }
+        ],
+    )
+
     return [
         SetEnvironmentVariable(
             "GZ_SIM_RESOURCE_PATH",
@@ -158,6 +172,7 @@ def launch_setup(context, *args, **kwargs):
         gz_server,
         robot_state_publisher,
         bridge,
+        height_scan_publisher,
         TimerAction(period=2.0, actions=[spawn_robot]),
         TimerAction(period=5.0, actions=[spawn_joint_state, spawn_legs, spawn_wheels]),
         RegisterEventHandler(
@@ -176,8 +191,10 @@ def generate_launch_description():
             DeclareLaunchArgument("headless", default_value="false"),
             DeclareLaunchArgument("paused", default_value="false"),
             DeclareLaunchArgument("use_rl", default_value="true"),
+            DeclareLaunchArgument("use_height_scan", default_value="true"),
             DeclareLaunchArgument("policy_path", default_value=""),
             DeclareLaunchArgument("policy_rate", default_value="50.0"),
+            DeclareLaunchArgument("height_scan_rate", default_value="50.0"),
             DeclareLaunchArgument("x", default_value="0.0"),
             DeclareLaunchArgument("y", default_value="0.0"),
             DeclareLaunchArgument("z", default_value="0.32"),

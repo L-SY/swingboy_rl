@@ -64,6 +64,7 @@ class SwingboyRlController(Node):
         self.declare_parameter("leg_action_clip", 2.0)
         self.declare_parameter("wheel_action_clip", 3.4)
         self.declare_parameter("action_filter_alpha", 0.35)
+        self.declare_parameter("leg_target_rate_limit", 4.0)
         self.declare_parameter("height_scan_size", 176)
         self.declare_parameter("height_scan_value", -0.2)
         self.declare_parameter("cmd_lin_x_limit", 0.65)
@@ -86,6 +87,7 @@ class SwingboyRlController(Node):
         self.leg_action_clip = max(0.0, float(self.get_parameter("leg_action_clip").value))
         self.wheel_action_clip = max(0.0, float(self.get_parameter("wheel_action_clip").value))
         self.action_filter_alpha = float(np.clip(float(self.get_parameter("action_filter_alpha").value), 0.0, 1.0))
+        self.leg_target_rate_limit = max(0.0, float(self.get_parameter("leg_target_rate_limit").value))
         self.height_scan_size = int(self.get_parameter("height_scan_size").value)
         self.height_scan_value = float(self.get_parameter("height_scan_value").value)
         self.cmd_lin_x_limit = float(self.get_parameter("cmd_lin_x_limit").value)
@@ -125,6 +127,8 @@ class SwingboyRlController(Node):
         self.height_scan = np.full(self.height_scan_size, self.height_scan_value, dtype=np.float32)
         self.start_monotonic = time.monotonic()
         self.warmup_start_leg_positions: Optional[np.ndarray] = None
+        self.last_leg_targets: Optional[np.ndarray] = None
+        self.last_command_monotonic: Optional[float] = None
 
         self.session = None
         self.input_name = None
@@ -182,6 +186,7 @@ class SwingboyRlController(Node):
                 [self.joint_pos[name] for name in self.leg_joint_order],
                 dtype=np.float32,
             )
+            self.start_monotonic = time.monotonic()
 
     def on_cmd_vel(self, msg: Twist):
         self.cmd[0] = float(np.clip(msg.linear.x, -self.cmd_lin_x_limit, self.cmd_lin_x_limit))
@@ -262,6 +267,7 @@ class SwingboyRlController(Node):
     def publish_raw_commands(self, leg_targets: np.ndarray, wheel_targets: np.ndarray):
         leg_targets = np.clip(leg_targets, -2.7, 2.7)
         wheel_targets = np.clip(wheel_targets, -40.0, 40.0)
+        leg_targets = self.limit_leg_target_rate(leg_targets)
 
         leg_msg = Float64MultiArray()
         leg_msg.data = [float(v) for v in leg_targets]
@@ -269,6 +275,25 @@ class SwingboyRlController(Node):
         wheel_msg.data = [float(v) for v in wheel_targets]
         self.leg_pub.publish(leg_msg)
         self.wheel_pub.publish(wheel_msg)
+
+    def limit_leg_target_rate(self, leg_targets: np.ndarray) -> np.ndarray:
+        if self.leg_target_rate_limit <= 0.0:
+            return leg_targets
+
+        now = time.monotonic()
+        if self.last_leg_targets is None:
+            self.last_leg_targets = np.array(
+                [self.joint_pos.get(name, leg_targets[index]) for index, name in enumerate(self.leg_joint_order)],
+                dtype=np.float32,
+            )
+            self.last_command_monotonic = now
+
+        dt = max(now - float(self.last_command_monotonic), 1.0 / max(self.rate_hz, 1.0))
+        max_step = self.leg_target_rate_limit * dt
+        limited = self.last_leg_targets + np.clip(leg_targets - self.last_leg_targets, -max_step, max_step)
+        self.last_leg_targets = limited.astype(np.float32)
+        self.last_command_monotonic = now
+        return limited
 
     def publish_commands(self, action: np.ndarray):
         leg_targets = self.default_leg_positions + action[:4] * self.leg_action_scale

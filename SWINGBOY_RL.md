@@ -99,6 +99,10 @@ active. It warms up from the current Gazebo joint state to the IsaacLab default
 standing pose before running the ONNX policy, then clips and low-pass filters
 actions before sending them to `ros2_control`.
 
+The launch also starts `swingboy_height_scan_publisher`, which publishes the
+same 176-value height-scan shape used by the IsaacLab rough-terrain policy for
+the procedural `rough_test.sdf` world.
+
 ## Environment Setup
 
 ```bash

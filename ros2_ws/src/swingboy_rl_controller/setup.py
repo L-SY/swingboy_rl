@@ -19,6 +19,7 @@ setup(
     entry_points={
         "console_scripts": [
             "swingboy_rl_controller = swingboy_rl_controller.rl_controller:main",
+            "swingboy_height_scan_publisher = swingboy_rl_controller.height_scan_publisher:main",
         ],
     },
 )
