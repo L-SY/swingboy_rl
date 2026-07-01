@@ -61,8 +61,8 @@ def default_config() -> config_dict.ConfigDict:
           resample_time=4.0,
       ),
       impl="jax",
-      naconmax=128,
-      njmax=64,
+      naconmax=1024,
+      njmax=256,
   )
 
 
