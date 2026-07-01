@@ -98,6 +98,13 @@ For a shorter trial, override the step counts:
 FLAT_STEPS=100000 ROUGH_STEPS=100000 scripts/train_swingboy_chain.sh
 ```
 
+TensorBoard logging is enabled by default in this script for future runs. Disable
+it with:
+
+```bash
+USE_TB=false scripts/train_swingboy_chain.sh
+```
+
 The equivalent manual commands are:
 
 ```bash
@@ -114,7 +121,8 @@ uv --no-config run train-jax-ppo \
   --num_updates_per_batch=2 \
   --unroll_length=10 \
   --num_videos=1 \
-  --suffix=swingboy-flat-long
+  --suffix=swingboy-flat-long \
+  --use_tb
 ```
 
 ```bash
@@ -132,8 +140,38 @@ uv --no-config run train-jax-ppo \
   --num_updates_per_batch=1 \
   --unroll_length=10 \
   --num_videos=1 \
-  --suffix=swingboy-rough-long
+  --suffix=swingboy-rough-long \
+  --use_tb
 ```
+
+## TensorBoard
+
+The current run only has console reward logs because it was started before
+TensorBoard logging was enabled in `scripts/train_swingboy_chain.sh`. For future
+runs:
+
+```bash
+uv --no-config run --with tensorboard tensorboard --logdir logs --port 6006
+```
+
+Then open `http://localhost:6006`.
+
+## Keyboard Play
+
+After a checkpoint exists, run the trained policy in a live MuJoCo viewer:
+
+```bash
+uv --no-config run python scripts/play_swingboy_keyboard.py \
+  --checkpoint logs/SwingboyJoystickRoughTerrain-20260701-101409-swingboy-rough-long/checkpoints \
+  --terrain rough
+```
+
+Controls:
+
+- `W` / `S`: increase or decrease forward velocity command.
+- `A` / `D`: increase or decrease yaw-rate command.
+- `X` or `Space`: stop.
+- `R`: reset.
 
 ## Notes
 

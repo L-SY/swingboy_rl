@@ -5,6 +5,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 : "${UV:=uv}"
 : "${CONSOLE_LOG:=logs/swingboy_train_$(date +%Y%m%d-%H%M%S).out}"
+: "${USE_TB:=true}"
 
 : "${FLAT_STEPS:=5000000}"
 : "${FLAT_IMPL:=warp}"
@@ -21,6 +22,13 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 mkdir -p "$(dirname "$CONSOLE_LOG")"
 exec > >(tee -a "$CONSOLE_LOG") 2>&1
+
+tb_args=()
+case "${USE_TB,,}" in
+  1|true|yes|on)
+    tb_args=(--use_tb)
+    ;;
+esac
 
 unset LD_LIBRARY_PATH
 export JAX_DEFAULT_MATMUL_PRECISION="${JAX_DEFAULT_MATMUL_PRECISION:-highest}"
@@ -41,7 +49,8 @@ echo "[$(date --iso-8601=seconds)] starting Swingboy flat training"
   --num_updates_per_batch=2 \
   --unroll_length=10 \
   --num_videos=1 \
-  --suffix="$FLAT_SUFFIX"
+  --suffix="$FLAT_SUFFIX" \
+  "${tb_args[@]}"
 
 echo "[$(date --iso-8601=seconds)] flat training finished; locating checkpoint"
 flat_ckpt="$(
@@ -74,6 +83,7 @@ echo "[$(date --iso-8601=seconds)] starting Swingboy rough training"
   --num_updates_per_batch=1 \
   --unroll_length=10 \
   --num_videos=1 \
-  --suffix="$ROUGH_SUFFIX"
+  --suffix="$ROUGH_SUFFIX" \
+  "${tb_args[@]}"
 
 echo "[$(date --iso-8601=seconds)] Swingboy training chain finished"
