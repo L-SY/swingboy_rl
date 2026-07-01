@@ -61,8 +61,8 @@ def default_config() -> config_dict.ConfigDict:
           resample_time=4.0,
       ),
       impl="jax",
-      naconmax=32,
-      njmax=16,
+      naconmax=128,
+      njmax=64,
   )
 
 
@@ -75,9 +75,6 @@ class Joystick(swingboy_base.SwingboyEnv):
       config: config_dict.ConfigDict = default_config(),
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
-    if task == "rough_terrain":
-      config.naconmax = 128
-      config.njmax = 64
     super().__init__(
         xml_path=consts.task_to_xml(task).as_posix(),
         config=config,

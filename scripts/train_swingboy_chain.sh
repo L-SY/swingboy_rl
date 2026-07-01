@@ -7,6 +7,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 : "${CONSOLE_LOG:=logs/swingboy_train_$(date +%Y%m%d-%H%M%S).out}"
 
 : "${FLAT_STEPS:=5000000}"
+: "${FLAT_IMPL:=warp}"
 : "${FLAT_NUM_ENVS:=128}"
 : "${FLAT_NUM_EVAL_ENVS:=32}"
 : "${FLAT_EPISODE_LENGTH:=500}"
@@ -29,7 +30,7 @@ export PYTHONUNBUFFERED=1
 echo "[$(date --iso-8601=seconds)] starting Swingboy flat training"
 "$UV" --no-config run train-jax-ppo \
   --env_name=SwingboyJoystickFlatTerrain \
-  --impl=jax \
+  --impl="$FLAT_IMPL" \
   --num_timesteps="$FLAT_STEPS" \
   --num_evals=10 \
   --num_envs="$FLAT_NUM_ENVS" \

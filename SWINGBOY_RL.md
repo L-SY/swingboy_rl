@@ -47,7 +47,7 @@ export XLA_PYTHON_CLIENT_PREALLOCATE=false
 
 uv --no-config run train-jax-ppo \
   --env_name=SwingboyJoystickFlatTerrain \
-  --impl=jax \
+  --impl=warp \
   --num_timesteps=8192 \
   --num_evals=1 \
   --num_envs=32 \
@@ -103,7 +103,7 @@ The equivalent manual commands are:
 ```bash
 uv --no-config run train-jax-ppo \
   --env_name=SwingboyJoystickFlatTerrain \
-  --impl=jax \
+  --impl=warp \
   --num_timesteps=5000000 \
   --num_evals=10 \
   --num_envs=128 \
@@ -138,7 +138,7 @@ uv --no-config run train-jax-ppo \
 ## Notes
 
 - Full STL collision is significantly slower than primitive collision and may
-  emit MuJoCo MJX mesh warnings. This is expected for high-face-count CAD
-  meshes.
+  emit MuJoCo MJX mesh warnings. Warp is the recommended implementation for
+  this setup because the original CAD meshes are also used for collisions.
 - If training becomes unstable, the first thing to tune is wheel action scale,
   command range, and collision mesh complexity.
