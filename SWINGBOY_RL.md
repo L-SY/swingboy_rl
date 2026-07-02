@@ -83,15 +83,21 @@ The left/right symmetry reward compares the hip-to-wheel line pitch angle in the
 base frame instead of raw hip/knee joint equality. It fades out as commanded yaw
 rate increases, so turning policies may use asymmetric leg geometry.
 
-Low-speed tracking stage:
+Velocity tracking curriculum from scratch:
 
 ```bash
-HEADLESS=false RESUME=true \
-  LOAD_RUN=<stand_run> CHECKPOINT=model_<iter>.pt \
-  NUM_ENVS=4096 MAX_ITERATIONS=2500 \
-  RUN_NAME=track_low_speed_from_stand \
+HEADLESS=false \
+  NUM_ENVS=2048 MAX_ITERATIONS=10000 \
+  RUN_NAME=track_velocity_curriculum_from_zero \
   scripts/train_isaaclab_swingboy_track.sh
 ```
+
+The tracking task starts from the standing initial pose, but does not need to
+resume a checkpoint. Command velocity ranges are expanded by an IsaacLab
+curriculum term only when recent reset episodes have high timeout success, low
+fall/contact termination rate, and sufficient `track_lin_vel_xy_exp` /
+`track_ang_vel_z_exp` episode reward. TensorBoard logs the active level and
+metrics under `Curriculum/command_velocity/*`.
 
 For the current recovery-first experiment, use:
 
