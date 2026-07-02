@@ -68,14 +68,16 @@ HEADLESS=false RENDERING_MODE=performance NUM_ENVS=4096 MAX_ITERATIONS=3000 \
 
 This task keeps the same deployment-style 27-value observation as recovery, but
 uses a zero velocity command and resets joints near a high standing pose instead
-of all zeros. The base height target is `0.45 m`, falls terminate quickly, and
+of all zeros. The base height target is `0.35 m`, falls terminate quickly, and
 push disturbances stay disabled until the robot can stay upright. Its PPO
 exploration noise and action scales are intentionally smaller than locomotion
 training so the first random policy does not kick the robot over immediately.
 The low-height termination is loose and base orientation is penalized but not
-used as an early termination in this first stage. Sustained base/hip/knee contact
-is still terminated so the policy cannot learn to scrape non-wheel links along
-the ground.
+used as an early termination in this first stage. Sustained base and hip-link
+contact are still terminated so the policy cannot learn to scrape the hip links
+along the ground; lower leg contact remains a soft penalty. Wheel action scale
+is kept large enough for two-wheel self-balancing while leg action exploration is
+kept small.
 
 For the current recovery-first experiment, use:
 
