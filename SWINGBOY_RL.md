@@ -100,9 +100,9 @@ fall/contact termination rate, and sufficient `track_lin_vel_xy_exp` /
 metrics under `Curriculum/command_velocity/*`.
 The first command level uses relaxed thresholds (`success>=0.82`,
 `termination<=0.20`) and later levels tighten progressively. Track PPO uses a
-lower exploration setup (`init_noise_std=0.20`, `entropy_coef=0.002`) to avoid
-the action standard deviation growing large enough to knock down an otherwise
-standing policy.
+moderate exploration setup (`init_noise_std=0.25`, `entropy_coef=0.005`) so the
+from-scratch policy can discover balancing without letting the action standard
+deviation grow too aggressively.
 
 For the current recovery-first experiment, use:
 
