@@ -92,11 +92,33 @@ Recovery termination is delayed instead of immediate:
 
 The recovery rewards keep velocity tracking but prioritize standing:
 
-- base height target: `0.30 m`, weight `-55`
+- base height target: `0.32 m`, weight `-120`
+- low base penalty below `0.28 m`, weight `-80`
 - flat base orientation, weight `-5`
+- left/right hip and knee symmetry, weight `-0.35`
 - base contact force penalty, weight `-0.06`
 - termination penalty, weight `-8`
 - mostly standing / slow commands at the start of training
+- interval push disturbance every `3-6 s`, applied as root velocity impulses
+
+Open a GUI training run:
+
+```bash
+HEADLESS=false RENDERING_MODE=performance NUM_ENVS=4096 MAX_ITERATIONS=10000 \
+  RUN_NAME=recovery_height_sym_push_gui \
+  scripts/train_isaaclab_swingboy_recovery.sh
+```
+
+Resume a GUI run from a checkpoint:
+
+```bash
+HEADLESS=false RESUME=true \
+  LOAD_RUN=2026-07-02_11-10-41_recovery_4096env_10000iter_20260702_111037 \
+  CHECKPOINT=model_550.pt \
+  NUM_ENVS=4096 MAX_ITERATIONS=10000 \
+  RUN_NAME=recovery_height_sym_push_gui_from_550 \
+  scripts/train_isaaclab_swingboy_recovery.sh
+```
 
 Export a recovery policy to a separate ONNX file:
 
