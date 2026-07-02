@@ -94,9 +94,10 @@ The recovery rewards keep velocity tracking but prioritize standing:
 
 - base height target: `0.32 m`, weight `-120`
 - low base penalty below `0.28 m`, weight `-80`
-- flat base orientation, weight `-5`
+- flat base orientation, weight `-8`
 - left/right hip and knee symmetry, weight `-0.35`
 - base contact force penalty, weight `-0.06`
+- non-wheel leg link contact force penalty, weight `-0.12`
 - termination penalty, weight `-8`
 - mostly standing / slow commands at the start of training
 - interval push disturbance every `3-6 s`, applied as root velocity impulses
