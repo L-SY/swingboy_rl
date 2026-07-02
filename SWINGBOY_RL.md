@@ -53,6 +53,66 @@ Important IsaacLab notes:
   the scalar `std` parameter becoming negative late in training.
 - The reward targets velocity tracking and a base height of `0.30 m`.
 
+## IsaacLab Recovery Task
+
+For the current recovery-first experiment, use:
+
+```bash
+cd /home/lsy/桌面/RL/IsaacLab
+PYTHONUNBUFFERED=1 TERM=xterm /home/lsy/桌面/RL/env_isaaclab/bin/isaaclab \
+  -p scripts/reinforcement_learning/rsl_rl/train.py \
+  --task Isaac-Velocity-Recovery-Swingboy-v0 \
+  --num_envs 2048 \
+  --max_iterations 1800 \
+  --device cuda:0 \
+  --headless \
+  --run_name recovery_zero_joints_noscan_nobaselin
+```
+
+This task intentionally removes policy access to base linear velocity and
+height scan. The actor/critic observation is 27 values:
+
+- base angular velocity: 3
+- projected gravity: 3
+- velocity command: 3
+- relative joint position: 6
+- joint velocity: 6
+- previous action: 6
+
+The reset keeps the IsaacLab standing pose as the action offset, but starts the
+episode with all joint positions scaled to zero. This lets the policy command
+the standing target easily while still learning from the zero-joint initial
+state.
+
+Recovery termination is delayed instead of immediate:
+
+- `time_out`
+- `base_contact`: terminate only after `base_link` contact force stays above
+  `1.0 N` continuously for `1.25 s`
+
+The recovery rewards keep velocity tracking but prioritize standing:
+
+- base height target: `0.30 m`, weight `-55`
+- flat base orientation, weight `-5`
+- base contact force penalty, weight `-0.06`
+- termination penalty, weight `-8`
+- mostly standing / slow commands at the start of training
+
+Export a recovery policy to a separate ONNX file:
+
+```bash
+TASK=Isaac-Velocity-Recovery-Swingboy-Play-v0 \
+POLICY_OUT=/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_recovery_latest.onnx \
+scripts/export_isaaclab_swingboy_policy.sh \
+  /home/lsy/桌面/RL/IsaacLab/logs/rsl_rl/swingboy_recovery_noscan_nobaselin/<run>/model_<iter>.pt
+```
+
+The ROS 2 controller auto-detects the ONNX input size:
+
+- `206`: rough policy with base linear velocity and height scan
+- `30`: flat policy with base linear velocity and no height scan
+- `27`: recovery policy with no base linear velocity and no height scan
+
 After training, export the selected checkpoint:
 
 ```bash

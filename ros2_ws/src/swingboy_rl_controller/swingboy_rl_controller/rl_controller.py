@@ -133,6 +133,7 @@ class SwingboyRlController(Node):
         self.session = None
         self.input_name = None
         self.output_name = None
+        self.expected_observation_size = 206
         self._load_policy()
 
         period = 1.0 / max(self.rate_hz, 1.0)
@@ -186,7 +187,30 @@ class SwingboyRlController(Node):
 
         self.input_name = self.session.get_inputs()[0].name
         self.output_name = self.session.get_outputs()[0].name
+        self.expected_observation_size = self._policy_observation_size()
         self.get_logger().info(f"Loaded ONNX policy: {self.policy_path}")
+        self.get_logger().info(
+            f"Policy observation size: {self.expected_observation_size} ({self._observation_layout_name()})"
+        )
+
+    def _policy_observation_size(self) -> int:
+        input_shape = self.session.get_inputs()[0].shape
+        for dim in reversed(input_shape):
+            if isinstance(dim, int) and dim > 1:
+                return dim
+        self.get_logger().warning(
+            f"Could not infer ONNX observation size from input shape {input_shape}; using 206-dim layout."
+        )
+        return 206
+
+    def _observation_layout_name(self) -> str:
+        if self.expected_observation_size == 206:
+            return "base linear velocity + height scan"
+        if self.expected_observation_size == 30:
+            return "base linear velocity, no height scan"
+        if self.expected_observation_size == 27:
+            return "no base linear velocity, no height scan"
+        return "unknown layout"
 
     def on_joint_state(self, msg: JointState):
         for index, name in enumerate(msg.name):
@@ -245,8 +269,27 @@ class SwingboyRlController(Node):
     def build_observation(self) -> np.ndarray:
         joint_pos = self.joint_vector(self.joint_pos) - self.default_joint_vector()
         joint_vel = self.joint_vector(self.joint_vel)
-        obs = np.concatenate(
-            [
+        if self.expected_observation_size == 27:
+            terms = [
+                self.base_ang_vel_body,
+                self.projected_gravity,
+                self.cmd,
+                joint_pos,
+                joint_vel,
+                self.previous_action,
+            ]
+        elif self.expected_observation_size == 30:
+            terms = [
+                self.base_lin_vel_body,
+                self.base_ang_vel_body,
+                self.projected_gravity,
+                self.cmd,
+                joint_pos,
+                joint_vel,
+                self.previous_action,
+            ]
+        else:
+            terms = [
                 self.base_lin_vel_body,
                 self.base_ang_vel_body,
                 self.projected_gravity,
@@ -256,9 +299,12 @@ class SwingboyRlController(Node):
                 self.previous_action,
                 self.height_scan,
             ]
-        ).astype(np.float32)
-        if obs.shape[0] != 206:
-            raise RuntimeError(f"Unexpected observation size {obs.shape[0]}, expected 206")
+        obs = np.concatenate(terms).astype(np.float32)
+        if obs.shape[0] != self.expected_observation_size:
+            raise RuntimeError(
+                f"Unexpected observation size {obs.shape[0]}, expected {self.expected_observation_size} "
+                f"for {self._observation_layout_name()}"
+            )
         return obs
 
     def infer_action(self, obs: np.ndarray) -> np.ndarray:
