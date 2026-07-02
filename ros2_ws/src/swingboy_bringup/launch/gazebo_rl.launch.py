@@ -206,7 +206,10 @@ def generate_launch_description():
             DeclareLaunchArgument("paused", default_value="false"),
             DeclareLaunchArgument("use_rl", default_value="true"),
             DeclareLaunchArgument("use_height_scan", default_value="true"),
-            DeclareLaunchArgument("policy_path", default_value=""),
+            DeclareLaunchArgument(
+                "policy_path",
+                default_value="/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_rough_latest.onnx",
+            ),
             DeclareLaunchArgument("policy_rate", default_value="50.0"),
             DeclareLaunchArgument("height_scan_rate", default_value="50.0"),
             DeclareLaunchArgument("x", default_value="0.0"),

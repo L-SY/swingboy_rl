@@ -149,11 +149,24 @@ class SwingboyRlController(Node):
         }
         return defaults
 
+    def _resolve_policy_path(self) -> str:
+        if not self.policy_path:
+            return ""
+        policy_path = os.path.expanduser(str(self.policy_path))
+        if os.path.isdir(policy_path):
+            for name in ("swingboy_rough_latest.onnx", "policy.onnx"):
+                candidate = os.path.join(policy_path, name)
+                if os.path.isfile(candidate):
+                    self.get_logger().info(f"Resolved policy directory to ONNX file: {candidate}")
+                    return candidate
+        return policy_path
+
     def _load_policy(self):
+        self.policy_path = self._resolve_policy_path()
         if not self.policy_path:
             self.get_logger().warning("No policy_path set; holding default stand pose with zero wheel velocity.")
             return
-        if not os.path.exists(self.policy_path):
+        if not os.path.isfile(self.policy_path):
             self.get_logger().error(f"Policy path does not exist: {self.policy_path}")
             return
         try:
