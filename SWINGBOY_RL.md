@@ -55,6 +55,28 @@ Important IsaacLab notes:
 
 ## IsaacLab Recovery Task
 
+The current workflow should be staged. Train stand/slow walking first from the
+default standing pose, then fine-tune recovery from harder resets.
+
+Stand-first task:
+
+```bash
+HEADLESS=false RENDERING_MODE=performance NUM_ENVS=4096 MAX_ITERATIONS=3000 \
+  RUN_NAME=stand_default_pose_gui \
+  scripts/train_isaaclab_swingboy_stand.sh
+```
+
+This task keeps the same deployment-style 27-value observation as recovery, but
+uses a zero velocity command and resets joints near a high standing pose instead
+of all zeros. The base height target is `0.45 m`, falls terminate quickly, and
+push disturbances stay disabled until the robot can stay upright. Its PPO
+exploration noise and action scales are intentionally smaller than locomotion
+training so the first random policy does not kick the robot over immediately.
+The low-height termination is loose and base orientation is penalized but not
+used as an early termination in this first stage. Sustained base/hip/knee contact
+is still terminated so the policy cannot learn to scrape non-wheel links along
+the ground.
+
 For the current recovery-first experiment, use:
 
 ```bash
