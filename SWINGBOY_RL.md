@@ -79,6 +79,20 @@ along the ground; lower leg contact remains a soft penalty. Wheel action scale
 is kept large enough for two-wheel self-balancing while leg action exploration is
 kept small.
 
+The left/right symmetry reward compares the hip-to-wheel line pitch angle in the
+base frame instead of raw hip/knee joint equality. It fades out as commanded yaw
+rate increases, so turning policies may use asymmetric leg geometry.
+
+Low-speed tracking stage:
+
+```bash
+HEADLESS=false RESUME=true \
+  LOAD_RUN=<stand_run> CHECKPOINT=model_<iter>.pt \
+  NUM_ENVS=4096 MAX_ITERATIONS=2500 \
+  RUN_NAME=track_low_speed_from_stand \
+  scripts/train_isaaclab_swingboy_track.sh
+```
+
 For the current recovery-first experiment, use:
 
 ```bash
