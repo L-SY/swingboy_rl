@@ -31,9 +31,22 @@ Launch with an exported ONNX policy:
 
 ```bash
 ros2 launch swingboy_bringup gazebo_rl.launch.py \
+  gui:=true \
   use_rl:=true \
   policy_path:=/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_rough_latest.onnx
 ```
+
+Keyboard control in another terminal:
+
+```bash
+cd /home/lsy/桌面/RL/swingboy_rl/ros2_ws
+source /opt/ros/lyrical/setup.bash
+source install/setup.bash
+ros2 run swingboy_rl_controller swingboy_keyboard_teleop
+```
+
+Controls: `W/S` changes forward speed, `A/D` changes yaw rate, `X` or space
+stops, and `Q` quits.
 
 The controller mirrors the IsaacLab action scaling: four leg position actions
 with scale `0.30` and two wheel velocity actions with scale `12.0`.

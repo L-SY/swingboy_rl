@@ -94,6 +94,21 @@ Run the RL command test after exporting a policy:
 ./src/swingboy_tests/scripts/run_gazebo_rl_test.sh
 ```
 
+Open the live Gazebo GUI with the exported policy:
+
+```bash
+ros2 launch swingboy_bringup gazebo_rl.launch.py \
+  gui:=true \
+  use_rl:=true \
+  policy_path:=/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_rough_latest.onnx
+```
+
+Then send keyboard velocity commands from another terminal:
+
+```bash
+ros2 run swingboy_rl_controller swingboy_keyboard_teleop
+```
+
 The Gazebo controller starts only after the leg and wheel controllers are
 active. It warms up from the current Gazebo joint state to the IsaacLab default
 standing pose before running the ONNX policy, then clips and low-pass filters

@@ -1,7 +1,14 @@
 import os
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler, SetEnvironmentVariable, TimerAction
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    OpaqueFunction,
+    RegisterEventHandler,
+    SetEnvironmentVariable,
+    TimerAction,
+)
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
@@ -47,6 +54,11 @@ def launch_setup(context, *args, **kwargs):
                 "verbosity_level": 3,
             }
         ],
+    )
+    gz_gui = ExecuteProcess(
+        cmd=["gz", "sim", "-g"],
+        output="screen",
+        condition=IfCondition(LaunchConfiguration("gui")),
     )
 
     robot_state_publisher = Node(
@@ -170,6 +182,7 @@ def launch_setup(context, *args, **kwargs):
             ),
         ),
         gz_server,
+        TimerAction(period=1.0, actions=[gz_gui]),
         robot_state_publisher,
         bridge,
         height_scan_publisher,
@@ -189,6 +202,7 @@ def generate_launch_description():
         [
             DeclareLaunchArgument("world", default_value=""),
             DeclareLaunchArgument("headless", default_value="false"),
+            DeclareLaunchArgument("gui", default_value="false"),
             DeclareLaunchArgument("paused", default_value="false"),
             DeclareLaunchArgument("use_rl", default_value="true"),
             DeclareLaunchArgument("use_height_scan", default_value="true"),
