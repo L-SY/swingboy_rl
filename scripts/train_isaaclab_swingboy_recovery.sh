@@ -8,7 +8,7 @@ DEVICE="${DEVICE:-cuda:0}"
 NUM_ENVS="${NUM_ENVS:-2048}"
 MAX_ITERATIONS="${MAX_ITERATIONS:-1800}"
 RUN_NAME="${RUN_NAME:-recovery_zero_joints_noscan_nobaselin}"
-HEADLESS="${HEADLESS:-true}"
+REQUESTED_HEADLESS="${HEADLESS:-true}"
 RENDERING_MODE="${RENDERING_MODE:-performance}"
 RESUME="${RESUME:-false}"
 LOAD_RUN="${LOAD_RUN:-}"
@@ -24,7 +24,7 @@ args=(
   --run_name "${RUN_NAME}"
 )
 
-case "${HEADLESS,,}" in
+case "${REQUESTED_HEADLESS,,}" in
   1|true|yes|on)
     args+=(--headless)
     ;;
@@ -43,4 +43,5 @@ case "${RESUME,,}" in
 esac
 
 cd "${ISAACLAB_DIR}"
+unset HEADLESS
 PYTHONUNBUFFERED=1 TERM=xterm "${ISAACLAB_CMD}" "${args[@]}"
