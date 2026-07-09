@@ -86,7 +86,9 @@ phase, because the robot starts from a low calibration pose and needs room to
 learn the get-up transient. Sustained hip-link contact termination is restored
 for the velocity-tracking phase. Wheel action scale is kept large enough for
 two-wheel self-balancing, while leg action scales are joint-specific: hip
-`0.35 rad`, knee `0.75 rad`.
+`0.35 rad`, knee `0.75 rad`. The stand phase also has a post-grace low-height
+termination: after `2.0 s`, episodes below `0.26 m` are reset instead of being
+counted as successful timeouts.
 
 The left/right symmetry reward compares the hip-to-wheel line pitch angle in the
 base frame instead of raw hip/knee joint equality. It fades out as commanded yaw
