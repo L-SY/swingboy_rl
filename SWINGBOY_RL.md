@@ -81,10 +81,12 @@ This task keeps the same deployment-style 27-value observation as recovery. It
 resets from the mechanical calibration pose, but a zero leg action commands the
 extended standing target. The base height target is `0.35 m`, falls terminate
 quickly, and push disturbances stay disabled until the robot can stay upright.
-Hip-link contact termination is delayed long enough for the robot to rise from
-the calibration pose; sustained scraping still terminates. Wheel action scale is
-kept large enough for two-wheel self-balancing, while leg action scales are
-joint-specific: hip `0.35 rad`, knee `0.75 rad`.
+Hip-link contact is penalized but not a terminal condition in this stand-only
+phase, because the robot starts from a low calibration pose and needs room to
+learn the get-up transient. Sustained hip-link contact termination is restored
+for the velocity-tracking phase. Wheel action scale is kept large enough for
+two-wheel self-balancing, while leg action scales are joint-specific: hip
+`0.35 rad`, knee `0.75 rad`.
 
 The left/right symmetry reward compares the hip-to-wheel line pitch angle in the
 base frame instead of raw hip/knee joint equality. It fades out as commanded yaw
