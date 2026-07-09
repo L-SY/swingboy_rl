@@ -48,13 +48,17 @@ ros2 run swingboy_rl_controller swingboy_keyboard_teleop
 Controls: `W/S` changes forward speed, `A/D` changes yaw rate, `X` or space
 stops, and `Q` quits.
 
-The controller mirrors the IsaacLab action scaling: four leg position actions
-with scale `0.25` and two wheel velocity actions with scale `8.0`.
+The controller mirrors the IsaacLab action mapping: leg observations are
+relative to the mechanical calibration pose, while leg position actions are
+applied around the extended standing offset. Wheel velocity actions use scale
+`8.0`.
 For Gazebo deployment, it also applies a startup warmup, action clipping, and a
 low-pass filter before publishing to `ros2_control`. The defaults are:
 
 - `warmup_duration_s=3.0`
 - `default_leg_positions=[2.268928, 0.0, 2.268928, 0.0]`
+- `action_leg_positions=[2.268928, 0.872665, 2.268928, 0.872665]`
+- `leg_action_scale=[0.35, 0.75, 0.35, 0.75]`
 - `leg_action_clip=1.0`
 - `wheel_action_clip=1.0`
 - `action_filter_alpha=0.35`

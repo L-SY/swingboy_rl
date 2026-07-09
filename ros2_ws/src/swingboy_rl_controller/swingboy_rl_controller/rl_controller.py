@@ -18,7 +18,10 @@ HIP_LOWER_LIMIT = 0.0
 HIP_UPPER_LIMIT = math.radians(130.0)
 KNEE_LOWER_LIMIT = 0.0
 KNEE_UPPER_LIMIT = math.radians(290.0)
+STAND_KNEE_POSITION = math.radians(50.0)
 DEFAULT_LEG_POSITIONS = [HIP_UPPER_LIMIT, KNEE_LOWER_LIMIT, HIP_UPPER_LIMIT, KNEE_LOWER_LIMIT]
+ACTION_LEG_POSITIONS = [HIP_UPPER_LIMIT, STAND_KNEE_POSITION, HIP_UPPER_LIMIT, STAND_KNEE_POSITION]
+LEG_ACTION_SCALES = [0.35, 0.75, 0.35, 0.75]
 LEG_JOINT_LOWER_LIMITS = [HIP_LOWER_LIMIT, KNEE_LOWER_LIMIT, HIP_LOWER_LIMIT, KNEE_LOWER_LIMIT]
 LEG_JOINT_UPPER_LIMITS = [HIP_UPPER_LIMIT, KNEE_UPPER_LIMIT, HIP_UPPER_LIMIT, KNEE_UPPER_LIMIT]
 
@@ -68,7 +71,7 @@ class SwingboyRlController(Node):
 
         self.declare_parameter("policy_path", "")
         self.declare_parameter("publish_rate_hz", 50.0)
-        self.declare_parameter("leg_action_scale", 0.25)
+        self.declare_parameter("leg_action_scale", LEG_ACTION_SCALES)
         self.declare_parameter("wheel_action_scale", 8.0)
         self.declare_parameter("leg_action_clip", 1.0)
         self.declare_parameter("wheel_action_clip", 1.0)
@@ -86,6 +89,7 @@ class SwingboyRlController(Node):
             ["left_hip", "right_hip", "left_knee", "right_knee", "left_wheel", "right_wheel"],
         )
         self.declare_parameter("default_leg_positions", DEFAULT_LEG_POSITIONS)
+        self.declare_parameter("action_leg_positions", ACTION_LEG_POSITIONS)
         self.declare_parameter("leg_joint_lower_limits", LEG_JOINT_LOWER_LIMITS)
         self.declare_parameter("leg_joint_upper_limits", LEG_JOINT_UPPER_LIMITS)
         self.declare_parameter("leg_command_topic", "/swingboy_leg_controller/commands")
@@ -93,7 +97,6 @@ class SwingboyRlController(Node):
 
         self.policy_path = self.get_parameter("policy_path").value
         self.rate_hz = float(self.get_parameter("publish_rate_hz").value)
-        self.leg_action_scale = float(self.get_parameter("leg_action_scale").value)
         self.wheel_action_scale = float(self.get_parameter("wheel_action_scale").value)
         self.leg_action_clip = max(0.0, float(self.get_parameter("leg_action_clip").value))
         self.wheel_action_clip = max(0.0, float(self.get_parameter("wheel_action_clip").value))
@@ -107,7 +110,9 @@ class SwingboyRlController(Node):
         self.leg_joint_order = list(self.get_parameter("leg_joint_order").value)
         self.wheel_joint_order = list(self.get_parameter("wheel_joint_order").value)
         self.observation_joint_order = list(self.get_parameter("observation_joint_order").value)
+        self.leg_action_scale = self._float_array_or_scalar_parameter("leg_action_scale", len(self.leg_joint_order))
         self.default_leg_positions = self._float_array_parameter("default_leg_positions", len(self.leg_joint_order))
+        self.action_leg_positions = self._float_array_parameter("action_leg_positions", len(self.leg_joint_order))
         self.leg_joint_lower_limits = self._float_array_parameter("leg_joint_lower_limits", len(self.leg_joint_order))
         self.leg_joint_upper_limits = self._float_array_parameter("leg_joint_upper_limits", len(self.leg_joint_order))
         self.default_joint_positions = self._default_joint_position_map()
@@ -156,6 +161,14 @@ class SwingboyRlController(Node):
         values = np.array(self.get_parameter(name).value, dtype=np.float32)
         if values.size != expected_size:
             raise ValueError(f"{name} must contain {expected_size} values, got {values.size}")
+        return values
+
+    def _float_array_or_scalar_parameter(self, name: str, expected_size: int) -> np.ndarray:
+        values = np.array(self.get_parameter(name).value, dtype=np.float32).reshape(-1)
+        if values.size == 1:
+            return np.full(expected_size, float(values[0]), dtype=np.float32)
+        if values.size != expected_size:
+            raise ValueError(f"{name} must contain either 1 or {expected_size} values, got {values.size}")
         return values
 
     def _default_joint_position_map(self) -> Dict[str, float]:
@@ -374,7 +387,7 @@ class SwingboyRlController(Node):
         return limited
 
     def publish_commands(self, action: np.ndarray):
-        leg_targets = self.default_leg_positions + action[:4] * self.leg_action_scale
+        leg_targets = self.action_leg_positions + action[:4] * self.leg_action_scale
         wheel_targets = action[4:6] * self.wheel_action_scale
         self.publish_raw_commands(leg_targets, wheel_targets)
 
@@ -390,7 +403,7 @@ class SwingboyRlController(Node):
         else:
             start = self.warmup_start_leg_positions
 
-        leg_targets = (1.0 - alpha) * start + alpha * self.default_leg_positions
+        leg_targets = (1.0 - alpha) * start + alpha * self.action_leg_positions
         wheel_targets = np.zeros(2, dtype=np.float32)
         self.publish_raw_commands(leg_targets, wheel_targets)
         self.previous_action = np.zeros(6, dtype=np.float32)

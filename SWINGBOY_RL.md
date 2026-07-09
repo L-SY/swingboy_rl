@@ -51,10 +51,14 @@ Important IsaacLab notes:
   position-controlled revolute joints. Hip limits are `0..130 deg`
   (`0..2.268928 rad`), and knee limits are `0..290 deg`
   (`0..5.061455 rad`).
-- The current default standing posture is hip `130 deg` and knee `0 deg` on
-  both sides. New IsaacLab training and ROS 2 deployment warm up toward this
-  pose. The optional MuJoCo Playground XML/keyframes are kept in the same
-  convention.
+- The mechanical calibration/reset pose is hip `130 deg` and knee `0 deg` on
+  both sides. With the current STL geometry this places the wheel bottom about
+  `0.158 m` below `base_link`, so training resets near `base_z=0.17 m`.
+- The policy action offset, i.e. the target commanded by zero leg actions, is
+  hip `130 deg` and knee `50 deg` on both sides. This gives a wheel-on-ground
+  base height near `0.35 m`. ROS 2 deployment uses the same separation:
+  observations are relative to the calibration pose, while leg actions are
+  applied around the extended standing offset.
 - RSL-RL exploration noise is configured with log standard deviation to avoid
   the scalar `std` parameter becoming negative late in training.
 - The stand/track reward targets velocity tracking while holding the base near
@@ -73,18 +77,14 @@ HEADLESS=false RENDERING_MODE=performance NUM_ENVS=4096 MAX_ITERATIONS=3000 \
   scripts/train_isaaclab_swingboy_stand.sh
 ```
 
-This task keeps the same deployment-style 27-value observation as recovery, but
-uses a zero velocity command and resets joints near a high standing pose instead
-of all zeros. The base height target is `0.35 m`, falls terminate quickly, and
-push disturbances stay disabled until the robot can stay upright. Its PPO
-exploration noise and action scales are intentionally smaller than locomotion
-training so the first random policy does not kick the robot over immediately.
-The low-height termination is loose and base orientation is penalized but not
-used as an early termination in this first stage. Sustained base and hip-link
-contact are still terminated so the policy cannot learn to scrape the hip links
-along the ground; lower leg contact remains a soft penalty. Wheel action scale
-is kept large enough for two-wheel self-balancing while leg action exploration is
-kept small.
+This task keeps the same deployment-style 27-value observation as recovery. It
+resets from the mechanical calibration pose, but a zero leg action commands the
+extended standing target. The base height target is `0.35 m`, falls terminate
+quickly, and push disturbances stay disabled until the robot can stay upright.
+Hip-link contact termination is delayed long enough for the robot to rise from
+the calibration pose; sustained scraping still terminates. Wheel action scale is
+kept large enough for two-wheel self-balancing, while leg action scales are
+joint-specific: hip `0.35 rad`, knee `0.75 rad`.
 
 The left/right symmetry reward compares the hip-to-wheel line pitch angle in the
 base frame instead of raw hip/knee joint equality. It fades out as commanded yaw
@@ -99,7 +99,8 @@ HEADLESS=false \
   scripts/train_isaaclab_swingboy_track.sh
 ```
 
-The tracking task starts from the standing initial pose, but does not need to
+The tracking task starts from the calibration reset pose and immediately
+commands the extended standing action offset, but does not need to
 resume a checkpoint. Command velocity ranges are expanded by an IsaacLab
 curriculum term only when recent reset episodes have high timeout success, low
 fall/contact termination rate, and sufficient `track_lin_vel_xy_exp` /
