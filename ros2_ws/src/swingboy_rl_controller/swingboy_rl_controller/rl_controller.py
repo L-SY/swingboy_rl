@@ -14,6 +14,15 @@ from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Float32MultiArray, Float64MultiArray
 
 
+HIP_LOWER_LIMIT = 0.0
+HIP_UPPER_LIMIT = math.radians(130.0)
+KNEE_LOWER_LIMIT = 0.0
+KNEE_UPPER_LIMIT = math.radians(290.0)
+DEFAULT_LEG_POSITIONS = [HIP_UPPER_LIMIT, KNEE_LOWER_LIMIT, HIP_UPPER_LIMIT, KNEE_LOWER_LIMIT]
+LEG_JOINT_LOWER_LIMITS = [HIP_LOWER_LIMIT, KNEE_LOWER_LIMIT, HIP_LOWER_LIMIT, KNEE_LOWER_LIMIT]
+LEG_JOINT_UPPER_LIMITS = [HIP_UPPER_LIMIT, KNEE_UPPER_LIMIT, HIP_UPPER_LIMIT, KNEE_UPPER_LIMIT]
+
+
 def quat_conjugate(q: Sequence[float]) -> np.ndarray:
     return np.array([q[0], -q[1], -q[2], -q[3]], dtype=np.float32)
 
@@ -76,7 +85,9 @@ class SwingboyRlController(Node):
             "observation_joint_order",
             ["left_hip", "right_hip", "left_knee", "right_knee", "left_wheel", "right_wheel"],
         )
-        self.declare_parameter("default_leg_positions", [2.15, 0.90, 2.15, 0.90])
+        self.declare_parameter("default_leg_positions", DEFAULT_LEG_POSITIONS)
+        self.declare_parameter("leg_joint_lower_limits", LEG_JOINT_LOWER_LIMITS)
+        self.declare_parameter("leg_joint_upper_limits", LEG_JOINT_UPPER_LIMITS)
         self.declare_parameter("leg_command_topic", "/swingboy_leg_controller/commands")
         self.declare_parameter("wheel_command_topic", "/swingboy_wheel_controller/commands")
 
@@ -96,7 +107,9 @@ class SwingboyRlController(Node):
         self.leg_joint_order = list(self.get_parameter("leg_joint_order").value)
         self.wheel_joint_order = list(self.get_parameter("wheel_joint_order").value)
         self.observation_joint_order = list(self.get_parameter("observation_joint_order").value)
-        self.default_leg_positions = np.array(self.get_parameter("default_leg_positions").value, dtype=np.float32)
+        self.default_leg_positions = self._float_array_parameter("default_leg_positions", len(self.leg_joint_order))
+        self.leg_joint_lower_limits = self._float_array_parameter("leg_joint_lower_limits", len(self.leg_joint_order))
+        self.leg_joint_upper_limits = self._float_array_parameter("leg_joint_upper_limits", len(self.leg_joint_order))
         self.default_joint_positions = self._default_joint_position_map()
 
         self.leg_pub = self.create_publisher(
@@ -138,6 +151,12 @@ class SwingboyRlController(Node):
 
         period = 1.0 / max(self.rate_hz, 1.0)
         self.timer = self.create_timer(period, self.update)
+
+    def _float_array_parameter(self, name: str, expected_size: int) -> np.ndarray:
+        values = np.array(self.get_parameter(name).value, dtype=np.float32)
+        if values.size != expected_size:
+            raise ValueError(f"{name} must contain {expected_size} values, got {values.size}")
+        return values
 
     def _default_joint_position_map(self) -> Dict[str, float]:
         defaults = {
@@ -324,7 +343,7 @@ class SwingboyRlController(Node):
         return (1.0 - self.action_filter_alpha) * self.previous_action + self.action_filter_alpha * clipped
 
     def publish_raw_commands(self, leg_targets: np.ndarray, wheel_targets: np.ndarray):
-        leg_targets = np.clip(leg_targets, -2.7, 2.7)
+        leg_targets = np.clip(leg_targets, self.leg_joint_lower_limits, self.leg_joint_upper_limits)
         wheel_targets = np.clip(wheel_targets, -40.0, 40.0)
         leg_targets = self.limit_leg_target_rate(leg_targets)
 

@@ -25,6 +25,16 @@ def generate_launch_description():
             ]
         )
     }
+    standing_pose = {
+        "zeros": {
+            "left_hip": 2.2689280276,
+            "left_knee": 0.0,
+            "right_hip": 2.2689280276,
+            "right_knee": 0.0,
+            "left_wheel": 0.0,
+            "right_wheel": 0.0,
+        }
+    }
 
     return LaunchDescription(
         [
@@ -42,7 +52,7 @@ def generate_launch_description():
                 executable="joint_state_publisher_gui",
                 name="joint_state_publisher_gui",
                 output="screen",
-                parameters=[robot_description],
+                parameters=[robot_description, standing_pose],
                 condition=IfCondition(use_gui),
             ),
             Node(
@@ -50,7 +60,7 @@ def generate_launch_description():
                 executable="joint_state_publisher",
                 name="joint_state_publisher",
                 output="screen",
-                parameters=[robot_description],
+                parameters=[robot_description, standing_pose],
                 condition=UnlessCondition(use_gui),
             ),
             Node(

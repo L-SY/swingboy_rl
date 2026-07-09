@@ -48,10 +48,17 @@ Important IsaacLab notes:
 - The robot asset uses original STL visual geometry and the same STL files for
   collision.
 - Wheel joints are continuous velocity-controlled joints; leg joints are
-  position-controlled revolute joints with `[-2.7, 2.7]` rad limits.
+  position-controlled revolute joints. Hip limits are `0..130 deg`
+  (`0..2.268928 rad`), and knee limits are `0..290 deg`
+  (`0..5.061455 rad`).
+- The current default standing posture is hip `130 deg` and knee `0 deg` on
+  both sides. New IsaacLab training and ROS 2 deployment warm up toward this
+  pose. The optional MuJoCo Playground XML/keyframes are kept in the same
+  convention.
 - RSL-RL exploration noise is configured with log standard deviation to avoid
   the scalar `std` parameter becoming negative late in training.
-- The reward targets velocity tracking and a base height of `0.30 m`.
+- The stand/track reward targets velocity tracking while holding the base near
+  `0.35 m`.
 
 ## IsaacLab Recovery Task
 
@@ -100,7 +107,7 @@ fall/contact termination rate, and sufficient `track_lin_vel_xy_exp` /
 metrics under `Curriculum/command_velocity/*`.
 The first command level uses relaxed thresholds (`success>=0.82`,
 `termination<=0.20`) and later levels tighten progressively. Track PPO uses a
-moderate exploration setup (`init_noise_std=0.25`, `entropy_coef=0.005`) so the
+moderate exploration setup (`init_noise_std=0.25`, `entropy_coef=0.002`) so the
 from-scratch policy can discover balancing without letting the action standard
 deviation grow too aggressively.
 
@@ -211,6 +218,10 @@ Current exported policy:
   `policies/swingboy_track_latest.onnx`
 - Observation layout:
   `27` values, no base linear velocity and no height scan.
+- This policy was trained with the previous standing pose and is obsolete after
+  the hip/knee limit and default-pose change. Retrain and export a new
+  `policies/swingboy_track_latest.onnx` before using it as the deployment
+  default.
 
 ## ROS 2 / Gazebo Sim
 

@@ -38,7 +38,7 @@
       <site name="imu" pos="0 0 0" size="0.003" rgba="0 0 0 0"/>
 
       <body name="left_hip_knee_link" pos="-0.046391 -0.120369 -0.016">
-        <joint name="left_hip" type="hinge" axis="0 1 0" range="-2.7 2.7"/>
+        <joint name="left_hip" type="hinge" axis="0 1 0" range="0 2.2689280276"/>
         <inertial pos="-0.022752868 -0.03439328 0.107589179" mass="2.86443343"
           fullinertia="0.033592999 0.035048815 0.003078528 0.000014913 0.006785996 -0.000008147"/>
         <geom name="left_hip_visual" class="visual" type="mesh" mesh="left_hip_knee_link_visual"
@@ -47,7 +47,7 @@
           pos="0.046391 0.120369 0.016"/>
 
         <body name="left_knee_wheel_link" pos="-0.045676 0 0.215206">
-          <joint name="left_knee" type="hinge" axis="0 -1 0" range="-2.7 2.7"/>
+          <joint name="left_knee" type="hinge" axis="0 5.0614548308"/>
           <inertial pos="0.110174318 0.004394033 -0.154769611" mass="1.81513349"
             fullinertia="0.007996185 0.011928148 0.004366643 0.000095645 0.005170151 -0.000128395"/>
           <geom name="left_knee_visual" class="visual" type="mesh" mesh="left_knee_wheel_link_visual"
@@ -68,7 +68,7 @@
       </body>
 
       <body name="right_hip_knee_link" pos="-0.046391 0.110369 -0.016">
-        <joint name="right_hip" type="hinge" axis="0 1 0" range="-2.7 2.7"/>
+        <joint name="right_hip" type="hinge" axis="0 2.2689280276"/>
         <inertial pos="-0.022728092 0.034458387 0.107287114" mass="2.85424007"
           fullinertia="0.033520469 0.034981628 0.003071209 -0.000015361 0.006784224 0.000013569"/>
         <geom name="right_hip_visual" class="visual" type="mesh" mesh="right_hip_knee_link_visual"
@@ -77,7 +77,7 @@
           pos="0.046391 -0.110369 0.016"/>
 
         <body name="right_knee_wheel_link" pos="-0.045741 0 0.215192">
-          <joint name="right_knee" type="hinge" axis="0 -1 0" range="-2.7 2.7"/>
+          <joint name="right_knee" type="hinge" axis="0 5.0614548308"/>
           <inertial pos="0.122975677 -0.00389461 -0.172485992" mass="1.42195298"
             fullinertia="0.004595036 0.006799078 0.002630821 -0.000052158 0.002835196 0.000072823"/>
           <geom name="right_knee_visual" class="visual" type="mesh" mesh="right_knee_wheel_link_visual"
@@ -100,10 +100,10 @@
   </worldbody>
 
   <actuator>
-    <position name="left_hip_pos" joint="left_hip" kp="55" kv="2.0" ctrlrange="-2.6 2.6"/>
-    <position name="left_knee_pos" joint="left_knee" kp="55" kv="2.0" ctrlrange="-2.6 2.6"/>
-    <position name="right_hip_pos" joint="right_hip" kp="55" kv="2.0" ctrlrange="-2.6 2.6"/>
-    <position name="right_knee_pos" joint="right_knee" kp="55" kv="2.0" ctrlrange="-2.6 2.6"/>
+    <position name="left_hip_pos" joint="left_hip" kp="55" kv="2.0" ctrlrange="0 2.2689280276"/>
+    <position name="left_knee_pos" joint="left_knee" kp="55" kv="2.0" ctrlrange="0 5.0614548308"/>
+    <position name="right_hip_pos" joint="right_hip" kp="55" kv="2.0" ctrlrange="0 2.2689280276"/>
+    <position name="right_knee_pos" joint="right_knee" kp="55" kv="2.0" ctrlrange="0 5.0614548308"/>
     <velocity name="left_wheel_vel" joint="left_wheel" kv="2.2" ctrlrange="-20 20"/>
     <velocity name="right_wheel_vel" joint="right_wheel" kv="2.2" ctrlrange="-20 20"/>
   </actuator>

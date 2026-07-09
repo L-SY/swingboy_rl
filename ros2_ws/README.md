@@ -49,21 +49,22 @@ Controls: `W/S` changes forward speed, `A/D` changes yaw rate, `X` or space
 stops, and `Q` quits.
 
 The controller mirrors the IsaacLab action scaling: four leg position actions
-with scale `0.30` and two wheel velocity actions with scale `12.0`.
+with scale `0.25` and two wheel velocity actions with scale `8.0`.
 For Gazebo deployment, it also applies a startup warmup, action clipping, and a
 low-pass filter before publishing to `ros2_control`. The defaults are:
 
 - `warmup_duration_s=3.0`
-- `leg_action_clip=2.0`
-- `wheel_action_clip=3.4`
+- `default_leg_positions=[2.268928, 0.0, 2.268928, 0.0]`
+- `leg_action_clip=1.0`
+- `wheel_action_clip=1.0`
 - `action_filter_alpha=0.35`
 - `leg_target_rate_limit=4.0 rad/s`
 
-The launch file starts `swingboy_height_scan_publisher` by default. It publishes
-176 height-scan values for the procedural geometry in `rough_test.sdf`, using
-the IsaacLab convention `base_z - terrain_z - 0.5`. If no
-`/swingboy/height_scan` publisher is present, the controller falls back to
-`-0.2`, matching the approximate flat-ground value for a `0.30 m` base height.
+The current deployment policy layout does not use base linear velocity or
+height scan. `swingboy_height_scan_publisher` can still be enabled with
+`use_height_scan:=true` for older rough-terrain policies; it publishes 176
+height-scan values for the procedural geometry in `rough_test.sdf`, using the
+IsaacLab convention `base_z - terrain_z - 0.5`.
 
 Smoke test:
 
