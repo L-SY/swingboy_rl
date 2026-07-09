@@ -195,18 +195,22 @@ scripts/export_isaaclab_swingboy_policy.sh \
 The script copies the exported ONNX policy to:
 
 ```bash
-policies/swingboy_rough_latest.onnx
+policies/swingboy_track_latest.onnx
 ```
 
 Current exported policy:
 
 - IsaacLab checkpoint:
-  `/home/lsy/桌面/RL/IsaacLab/logs/rsl_rl/swingboy_rough_mixed/2026-07-01_18-09-56_logstd_rough_continue_from_1050/model_1649.pt`
-- Final training metrics at iteration 1649: mean reward `52.76`, mean episode
-  length `1000`, `error_vel_xy=0.2154`, `error_vel_yaw=0.3983`, and
-  `base_height_l2=-0.0012`.
+  `/home/lsy/桌面/RL/IsaacLab/logs/rsl_rl/swingboy_stand_noscan_nobaselin/2026-07-02_16-38-33_track_velocity_curriculum_mid_entropy_from_zero_gui_20260702_163826/model_1200.pt`
+- Candidate metrics near iteration 1200: curriculum level `4`, mean reward
+  `20.89`, mean episode length `594.16`, timeout `0.9341`,
+  `root_height=0.0176`, `base_contact=0.0037`, and `hip_link_contact=0.0446`.
+- This candidate is preferred over the final `model_9999.pt` because the late
+  training action standard deviation became numerically unstable.
 - Exported ONNX:
-  `policies/swingboy_rough_latest.onnx`
+  `policies/swingboy_track_latest.onnx`
+- Observation layout:
+  `27` values, no base linear velocity and no height scan.
 
 ## ROS 2 / Gazebo Sim
 
@@ -232,7 +236,8 @@ Open the live Gazebo GUI with the exported policy:
 ros2 launch swingboy_bringup gazebo_rl.launch.py \
   gui:=true \
   use_rl:=true \
-  policy_path:=/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_rough_latest.onnx
+  policy_path:=/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_track_latest.onnx \
+  use_height_scan:=false
 ```
 
 Then send keyboard velocity commands from another terminal:

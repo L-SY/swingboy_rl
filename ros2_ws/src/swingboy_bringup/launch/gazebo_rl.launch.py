@@ -205,16 +205,16 @@ def generate_launch_description():
             DeclareLaunchArgument("gui", default_value="false"),
             DeclareLaunchArgument("paused", default_value="false"),
             DeclareLaunchArgument("use_rl", default_value="true"),
-            DeclareLaunchArgument("use_height_scan", default_value="true"),
+            DeclareLaunchArgument("use_height_scan", default_value="false"),
             DeclareLaunchArgument(
                 "policy_path",
-                default_value="/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_rough_latest.onnx",
+                default_value="/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_track_latest.onnx",
             ),
             DeclareLaunchArgument("policy_rate", default_value="50.0"),
             DeclareLaunchArgument("height_scan_rate", default_value="50.0"),
             DeclareLaunchArgument("x", default_value="0.0"),
             DeclareLaunchArgument("y", default_value="0.0"),
-            DeclareLaunchArgument("z", default_value="0.32"),
+            DeclareLaunchArgument("z", default_value="0.35"),
             OpaqueFunction(function=launch_setup),
         ]
     )

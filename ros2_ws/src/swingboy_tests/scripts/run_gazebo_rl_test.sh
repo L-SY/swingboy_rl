@@ -14,10 +14,10 @@ else
 fi
 
 REPO_ROOT=$(cd -- "${ROS2_WS}/.." && pwd)
-POLICY_PATH="${SWINGBOY_POLICY_PATH:-${REPO_ROOT}/policies/swingboy_rough_latest.onnx}"
+POLICY_PATH="${SWINGBOY_POLICY_PATH:-${REPO_ROOT}/policies/swingboy_track_latest.onnx}"
 if [[ ! -f "${POLICY_PATH}" ]]; then
-  echo "Missing policy: ${POLICY_PATH}" >&2
-  echo "Export the IsaacLab policy to policies/swingboy_rough_latest.onnx or set SWINGBOY_POLICY_PATH." >&2
+    echo "Missing policy: ${POLICY_PATH}" >&2
+    echo "Export the IsaacLab policy to policies/swingboy_track_latest.onnx or set SWINGBOY_POLICY_PATH." >&2
   exit 2
 fi
 
@@ -32,6 +32,7 @@ mkdir -p "$(dirname "${LOG_FILE}")"
 setsid ros2 launch swingboy_bringup gazebo_rl.launch.py \
   headless:=true \
   use_rl:=true \
+  use_height_scan:=false \
   policy_path:="${POLICY_PATH}" >"${LOG_FILE}" 2>&1 &
 launch_pid=$!
 
@@ -64,10 +65,6 @@ rl_controller_ready() {
   ros2 node list 2>/dev/null | grep -q '^/swingboy_rl_controller$'
 }
 
-height_scan_ready() {
-  timeout 8 ros2 topic echo --once /swingboy/height_scan std_msgs/msg/Float32MultiArray >/dev/null 2>&1
-}
-
 deadline=$((SECONDS + TIMEOUT_SEC))
 while (( SECONDS < deadline )); do
   if ! kill -0 "${launch_pid}" 2>/dev/null; then
@@ -83,12 +80,6 @@ done
 
 if (( SECONDS >= deadline )); then
   echo "Timed out waiting for controllers and RL controller. Log tail:" >&2
-  tail -160 "${LOG_FILE}" >&2 || true
-  exit 1
-fi
-
-if ! height_scan_ready; then
-  echo "Timed out waiting for /swingboy/height_scan. Log tail:" >&2
   tail -160 "${LOG_FILE}" >&2 || true
   exit 1
 fi

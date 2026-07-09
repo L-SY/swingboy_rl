@@ -59,10 +59,10 @@ class SwingboyRlController(Node):
 
         self.declare_parameter("policy_path", "")
         self.declare_parameter("publish_rate_hz", 50.0)
-        self.declare_parameter("leg_action_scale", 0.30)
-        self.declare_parameter("wheel_action_scale", 12.0)
-        self.declare_parameter("leg_action_clip", 2.0)
-        self.declare_parameter("wheel_action_clip", 3.4)
+        self.declare_parameter("leg_action_scale", 0.25)
+        self.declare_parameter("wheel_action_scale", 8.0)
+        self.declare_parameter("leg_action_clip", 1.0)
+        self.declare_parameter("wheel_action_clip", 1.0)
         self.declare_parameter("action_filter_alpha", 0.35)
         self.declare_parameter("leg_target_rate_limit", 4.0)
         self.declare_parameter("height_scan_size", 176)
@@ -74,9 +74,9 @@ class SwingboyRlController(Node):
         self.declare_parameter("wheel_joint_order", ["left_wheel", "right_wheel"])
         self.declare_parameter(
             "observation_joint_order",
-            ["left_hip", "right_hip", "right_knee", "right_wheel", "left_knee", "left_wheel"],
+            ["left_hip", "right_hip", "left_knee", "right_knee", "left_wheel", "right_wheel"],
         )
-        self.declare_parameter("default_leg_positions", [1.925, 0.675, 1.925, 0.675])
+        self.declare_parameter("default_leg_positions", [2.15, 0.90, 2.15, 0.90])
         self.declare_parameter("leg_command_topic", "/swingboy_leg_controller/commands")
         self.declare_parameter("wheel_command_topic", "/swingboy_wheel_controller/commands")
 
@@ -155,7 +155,7 @@ class SwingboyRlController(Node):
             return ""
         policy_path = os.path.expanduser(str(self.policy_path))
         if os.path.isdir(policy_path):
-            for name in ("swingboy_rough_latest.onnx", "policy.onnx"):
+            for name in ("swingboy_track_latest.onnx", "swingboy_rough_latest.onnx", "policy.onnx"):
                 candidate = os.path.join(policy_path, name)
                 if os.path.isfile(candidate):
                     self.get_logger().info(f"Resolved policy directory to ONNX file: {candidate}")
