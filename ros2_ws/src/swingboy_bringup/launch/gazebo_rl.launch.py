@@ -11,7 +11,7 @@ from launch.actions import (
 )
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
-from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import Command, EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -208,13 +208,13 @@ def generate_launch_description():
             DeclareLaunchArgument("use_height_scan", default_value="false"),
             DeclareLaunchArgument(
                 "policy_path",
-                default_value="/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_track_latest.onnx",
+                default_value=EnvironmentVariable("SWINGBOY_POLICY_PATH", default_value=""),
             ),
             DeclareLaunchArgument("policy_rate", default_value="50.0"),
             DeclareLaunchArgument("height_scan_rate", default_value="50.0"),
             DeclareLaunchArgument("x", default_value="0.0"),
             DeclareLaunchArgument("y", default_value="0.0"),
-            DeclareLaunchArgument("z", default_value="0.35"),
+            DeclareLaunchArgument("z", default_value="0.18"),
             OpaqueFunction(function=launch_setup),
         ]
     )

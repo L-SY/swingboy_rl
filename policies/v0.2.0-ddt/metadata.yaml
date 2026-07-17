@@ -1,0 +1,15 @@
+version: v0.2.0-ddt
+framework: ddt-lab-np3o
+task: DDT-Velocity-Flat-Swingboy-v0
+source_checkpoint: model_700.pt
+exported_at: "2026-07-17"
+deployment_status: isaaclab-play-only
+policy_inputs:
+  - current_proprioception
+  - proprioception_history
+files:
+  onnx: policy.onnx
+  torchscript: policy.pt
+notes:
+  - The full optimizer checkpoint and logs are intentionally not tracked.
+  - The legacy ROS 2 controller does not implement this two-input contract.

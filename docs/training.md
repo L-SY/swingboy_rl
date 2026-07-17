@@ -1,7 +1,8 @@
 # Swingboy RL
 
 This repository is a MuJoCo Playground source checkout with a custom
-wheel-legged robot environment under `mujoco_playground/_src/locomotion/swingboy`.
+wheel-legged robot environment under
+`sim/mujoco/mujoco_playground/_src/locomotion/swingboy`.
 
 ## What Is Included
 
@@ -24,13 +25,20 @@ Training outputs are intentionally not tracked:
 - `.venv/`
 - MuJoCo asset caches
 
+Commands below assume these variables are set from the repository checkout:
+
+```bash
+export SWINGBOY_RL_ROOT="$(git rev-parse --show-toplevel)"
+export RL_ROOT="$(dirname "${SWINGBOY_RL_ROOT}")"
+```
+
 ## Current IsaacLab Training Path
 
 The active training run uses IsaacLab, not MuJoCo Playground:
 
 ```bash
-cd /home/lsy/桌面/RL/IsaacLab
-PYTHONUNBUFFERED=1 TERM=xterm /home/lsy/桌面/RL/env_isaaclab/bin/isaaclab \
+cd "${RL_ROOT}/IsaacLab"
+PYTHONUNBUFFERED=1 TERM=xterm "${RL_ROOT}/env_isaaclab/bin/isaaclab" \
   -p scripts/reinforcement_learning/rsl_rl/train.py \
   --task Isaac-Velocity-RoughMixed-Swingboy-v0 \
   --num_envs 2048 \
@@ -49,25 +57,40 @@ Important IsaacLab notes:
   collision.
 - Wheel joints are continuous velocity-controlled joints; leg joints are
   position-controlled revolute joints. Hip limits are `0..130 deg`
-  (`0..2.268928 rad`), and knee limits are `0..290 deg`
-  (`0..5.061455 rad`).
-- The mechanical calibration/reset pose is hip `130 deg` and knee `0 deg` on
-  both sides. With the current STL geometry this places the wheel bottom about
-  `0.158 m` below `base_link`, so training resets near `base_z=0.17 m`.
+  (`0..2.268928 rad`), and knee limits are `5..290 deg`
+  (`0.087266..5.061455 rad`).
+- The mechanical calibration/reset pose is hip `130 deg` and knee `5 deg` on
+  both sides. Training resets near `base_z=0.18 m`.
 - The policy action offset, i.e. the target commanded by zero leg actions, is
-  hip `130 deg` and knee `50 deg` on both sides. This gives a wheel-on-ground
-  base height near `0.35 m`. ROS 2 deployment uses the same separation:
+  hip `130 deg` and knee `35.3 deg` on both sides. This gives a wheel-on-ground
+  base height near `0.30 m`. ROS 2 deployment uses the same separation:
   observations are relative to the calibration pose, while leg actions are
   applied around the extended standing offset.
 - RSL-RL exploration noise is configured with log standard deviation to avoid
   the scalar `std` parameter becoming negative late in training.
 - The stand/track reward targets velocity tracking while holding the base near
-  `0.35 m`.
+  `0.30 m`.
 
 ## IsaacLab Recovery Task
 
-The current workflow should be staged. Train stand/slow walking first from the
-default standing pose, then fine-tune recovery from harder resets.
+The stand-up workflow uses two separate tasks so discovery regularization does
+not weaken deployment constraints:
+
+- Stage I: `Isaac-Standup-Discovery-Swingboy-v0` discovers a feasible motion
+  from the measured hip `130 deg`, knee `5 deg` calibration pose. It uses weak
+  torque, velocity, acceleration, smoothness, drift, and symmetry penalties.
+- Stage II: `Isaac-Safe-Standup-Swingboy-v0` refines a selected Stage-I
+  checkpoint with strict stationary, smoothness, contact, and drift criteria.
+
+Stage-I GUI training:
+
+```bash
+cd "${RL_ROOT}/IsaacLab"
+"${RL_ROOT}/env_isaaclab/bin/isaaclab" -p \
+  scripts/reinforcement_learning/rsl_rl/train.py \
+  --task Isaac-Standup-Discovery-Swingboy-v0 \
+  --num_envs 4096 --max_iterations 10000 --device cuda:0
+```
 
 Stand-first task:
 
@@ -79,15 +102,15 @@ HEADLESS=false RENDERING_MODE=performance NUM_ENVS=4096 MAX_ITERATIONS=3000 \
 
 This task keeps the same deployment-style 27-value observation as recovery. It
 resets from the mechanical calibration pose, but a zero leg action commands the
-extended standing target. The base height target is `0.35 m`, falls terminate
+extended standing target. The base height target is `0.30 m`, falls terminate
 quickly, and push disturbances stay disabled until the robot can stay upright.
 Hip-link contact is penalized but not a terminal condition in this stand-only
 phase, because the robot starts from a low calibration pose and needs room to
 learn the get-up transient. Sustained hip-link contact termination is restored
 for the velocity-tracking phase. Wheel action scale is kept large enough for
 two-wheel self-balancing, while leg action scales are joint-specific: hip
-`0.35 rad`, knee `0.75 rad`. The stand phase also has a post-grace low-height
-termination: after `2.0 s`, episodes below `0.26 m` are reset instead of being
+`0.18 rad`, knee `1.0 rad`. The stand phase also has a post-grace low-height
+termination: after `4.0 s`, episodes below `0.23 m` are reset instead of being
 counted as successful timeouts.
 
 The left/right symmetry reward compares the hip-to-wheel line pitch angle in the
@@ -119,8 +142,8 @@ deviation grow too aggressively.
 For the current recovery-first experiment, use:
 
 ```bash
-cd /home/lsy/桌面/RL/IsaacLab
-PYTHONUNBUFFERED=1 TERM=xterm /home/lsy/桌面/RL/env_isaaclab/bin/isaaclab \
+cd "${RL_ROOT}/IsaacLab"
+PYTHONUNBUFFERED=1 TERM=xterm "${RL_ROOT}/env_isaaclab/bin/isaaclab" \
   -p scripts/reinforcement_learning/rsl_rl/train.py \
   --task Isaac-Velocity-Recovery-Swingboy-v0 \
   --num_envs 2048 \
@@ -186,9 +209,9 @@ Export a recovery policy to a separate ONNX file:
 
 ```bash
 TASK=Isaac-Velocity-Recovery-Swingboy-Play-v0 \
-POLICY_OUT=/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_recovery_latest.onnx \
+POLICY_OUT="${SWINGBOY_RL_ROOT}/policies/v0.1.0-legacy/swingboy_recovery_latest.onnx" \
 scripts/export_isaaclab_swingboy_policy.sh \
-  /home/lsy/桌面/RL/IsaacLab/logs/rsl_rl/swingboy_recovery_noscan_nobaselin/<run>/model_<iter>.pt
+  "${RL_ROOT}/IsaacLab/logs/rsl_rl/swingboy_recovery_noscan_nobaselin/<run>/model_<iter>.pt"
 ```
 
 The ROS 2 controller auto-detects the ONNX input size:
@@ -201,31 +224,31 @@ After training, export the selected checkpoint:
 
 ```bash
 scripts/export_isaaclab_swingboy_policy.sh \
-  /home/lsy/桌面/RL/IsaacLab/logs/rsl_rl/swingboy_rough_mixed/<run>/model_<iter>.pt
+  "${RL_ROOT}/IsaacLab/logs/rsl_rl/swingboy_rough_mixed/<run>/model_<iter>.pt"
 ```
 
 The script copies the exported ONNX policy to:
 
 ```bash
-policies/swingboy_track_latest.onnx
+policies/v0.1.0-legacy/swingboy_track_latest.onnx
 ```
 
 Current exported policy:
 
 - IsaacLab checkpoint:
-  `/home/lsy/桌面/RL/IsaacLab/logs/rsl_rl/swingboy_stand_noscan_nobaselin/2026-07-02_16-38-33_track_velocity_curriculum_mid_entropy_from_zero_gui_20260702_163826/model_1200.pt`
+  `${RL_ROOT}/IsaacLab/logs/rsl_rl/swingboy_stand_noscan_nobaselin/2026-07-02_16-38-33_track_velocity_curriculum_mid_entropy_from_zero_gui_20260702_163826/model_1200.pt`
 - Candidate metrics near iteration 1200: curriculum level `4`, mean reward
   `20.89`, mean episode length `594.16`, timeout `0.9341`,
   `root_height=0.0176`, `base_contact=0.0037`, and `hip_link_contact=0.0446`.
 - This candidate is preferred over the final `model_9999.pt` because the late
   training action standard deviation became numerically unstable.
 - Exported ONNX:
-  `policies/swingboy_track_latest.onnx`
+  `policies/v0.1.0-legacy/swingboy_track_latest.onnx`
 - Observation layout:
   `27` values, no base linear velocity and no height scan.
 - This policy was trained with the previous standing pose and is obsolete after
   the hip/knee limit and default-pose change. Retrain and export a new
-  `policies/swingboy_track_latest.onnx` before using it as the deployment
+  `policies/v0.1.0-legacy/swingboy_track_latest.onnx` before using it as the deployment
   default.
 
 ## ROS 2 / Gazebo Sim
@@ -233,7 +256,7 @@ Current exported policy:
 Build and smoke test:
 
 ```bash
-cd /home/lsy/桌面/RL/swingboy_rl/ros2_ws
+cd "${SWINGBOY_RL_ROOT}/ros2_ws"
 source /opt/ros/lyrical/setup.bash
 colcon build --symlink-install
 source install/setup.bash
@@ -252,7 +275,7 @@ Open the live Gazebo GUI with the exported policy:
 ros2 launch swingboy_bringup gazebo_rl.launch.py \
   gui:=true \
   use_rl:=true \
-  policy_path:=/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_track_latest.onnx \
+  policy_path:="${SWINGBOY_RL_ROOT}/policies/v0.1.0-legacy/swingboy_track_latest.onnx" \
   use_height_scan:=false
 ```
 

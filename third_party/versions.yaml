@@ -1,0 +1,24 @@
+schema_version: 1
+
+runtime:
+  python: "3.11"
+  isaac_sim: "5.1.0"
+  ros: "ROS 2 Lyrical"
+
+repositories:
+  isaaclab:
+    url: https://github.com/isaac-sim/IsaacLab.git
+    revision: 3c6e67bb5c7ada942a6d1884ab69338f57596f77
+    version: "2.3.0"
+  ddt_lab:
+    url: https://github.com/DDTRobot/DDT_Lab.git
+    revision: 701a49c6e78dfb93a8b30145f0e7723b22921c0b
+  mujoco_playground:
+    url: https://github.com/google-deepmind/mujoco_playground.git
+    revision: a61676aaa66ba252403ea210a06e52c65ffcfc70
+  tron1_rl_isaaclab:
+    url: https://github.com/limxdynamics/tron1-rl-isaaclab.git
+    revision: 28ae5092cfc9371685557036f1e8779f594f7114
+
+python_packages:
+  rsl_rl: "3.0.1"

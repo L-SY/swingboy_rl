@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+REPO_ROOT=$(cd -- "${SCRIPT_DIR}/.." && pwd)
+cd "${REPO_ROOT}/sim/mujoco"
 
 : "${UV:=uv}"
-: "${CONSOLE_LOG:=logs/swingboy_train_$(date +%Y%m%d-%H%M%S).out}"
+: "${CONSOLE_LOG:=${REPO_ROOT}/logs/swingboy_train_$(date +%Y%m%d-%H%M%S).out}"
 : "${USE_TB:=true}"
 
 : "${FLAT_STEPS:=5000000}"

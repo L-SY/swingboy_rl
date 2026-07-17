@@ -14,10 +14,10 @@ else
 fi
 
 REPO_ROOT=$(cd -- "${ROS2_WS}/.." && pwd)
-POLICY_PATH="${SWINGBOY_POLICY_PATH:-${REPO_ROOT}/policies/swingboy_track_latest.onnx}"
+POLICY_PATH="${SWINGBOY_POLICY_PATH:-${REPO_ROOT}/policies/v0.1.0-legacy/swingboy_track_latest.onnx}"
 if [[ ! -f "${POLICY_PATH}" ]]; then
     echo "Missing policy: ${POLICY_PATH}" >&2
-    echo "Export the IsaacLab policy to policies/swingboy_track_latest.onnx or set SWINGBOY_POLICY_PATH." >&2
+    echo "Export the IsaacLab policy to policies/v0.1.0-legacy/swingboy_track_latest.onnx or set SWINGBOY_POLICY_PATH." >&2
   exit 2
 fi
 

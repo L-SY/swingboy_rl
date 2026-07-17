@@ -1,3 +1,5 @@
+import math
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition, UnlessCondition
@@ -28,9 +30,9 @@ def generate_launch_description():
     standing_pose = {
         "zeros": {
             "left_hip": 2.2689280276,
-            "left_knee": 0.0,
+            "left_knee": math.radians(5.0),
             "right_hip": 2.2689280276,
-            "right_knee": 0.0,
+            "right_knee": math.radians(5.0),
             "left_wheel": 0.0,
             "right_wheel": 0.0,
         }

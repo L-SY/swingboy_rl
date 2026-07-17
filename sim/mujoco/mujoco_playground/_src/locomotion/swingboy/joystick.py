@@ -20,7 +20,7 @@ def default_config() -> config_dict.ConfigDict:
       action_repeat=1,
       leg_action_scale=0.35,
       wheel_action_scale=16.0,
-      target_base_height=0.35,
+      target_base_height=0.30,
       terminate_base_height=0.14,
       max_base_height=0.60,
       noise_config=config_dict.create(

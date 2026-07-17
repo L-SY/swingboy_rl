@@ -1,0 +1,8 @@
+version: v0.1.0-legacy
+framework: isaaclab-rsl-rl
+deployment_status: gazebo-compatible
+controller: ros2_ws/src/swingboy_rl_controller
+files:
+  default: swingboy_track_latest.onnx
+  rough: swingboy_rough_latest.onnx
+  archived_track_checkpoint: swingboy_track_model_1200.onnx

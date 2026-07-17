@@ -1,12 +1,13 @@
-# Policies
+# Versioned policies
 
-Place exported IsaacLab policies here.
+Each policy version has its own directory and metadata describing the exact
+observation/action contract.
 
-Expected deployment file:
+- `v0.1.0-legacy/`: legacy IsaacLab policies used by the current ROS 2
+  controller.
+- `v0.2.0-ddt/`: DDT_Lab NP3O export from the Tita-style Swingboy task. This
+  policy uses the NP3O history interface and is not yet compatible with the
+  legacy ROS 2 controller.
 
-- `swingboy_rough_latest.onnx`
-
-The ONNX policy should be exported from the same IsaacLab observation/action
-setup documented in `ros2_ws/README.md`. The ROS controller also supports an
-empty `policy_path`; in that mode it only holds the default standing pose and
-sends zero wheel velocity, which is useful for Gazebo smoke tests.
+Full optimizer checkpoints and TensorBoard logs are release artifacts, not
+repository source files.

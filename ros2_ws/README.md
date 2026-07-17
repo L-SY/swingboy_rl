@@ -14,7 +14,7 @@ Packages:
 Build:
 
 ```bash
-cd /home/lsy/桌面/RL/swingboy_rl/ros2_ws
+cd <path-to-swingboy_rl>/ros2_ws
 sudo apt install python3-onnxruntime
 source /opt/ros/lyrical/setup.bash
 colcon build --symlink-install
@@ -33,13 +33,13 @@ Launch with an exported ONNX policy:
 ros2 launch swingboy_bringup gazebo_rl.launch.py \
   gui:=true \
   use_rl:=true \
-  policy_path:=/home/lsy/桌面/RL/swingboy_rl/policies/swingboy_rough_latest.onnx
+  policy_path:="$(realpath ../policies/v0.1.0-legacy/swingboy_rough_latest.onnx)"
 ```
 
 Keyboard control in another terminal:
 
 ```bash
-cd /home/lsy/桌面/RL/swingboy_rl/ros2_ws
+cd <path-to-swingboy_rl>/ros2_ws
 source /opt/ros/lyrical/setup.bash
 source install/setup.bash
 ros2 run swingboy_rl_controller swingboy_keyboard_teleop
@@ -50,15 +50,15 @@ stops, and `Q` quits.
 
 The controller mirrors the IsaacLab action mapping: leg observations are
 relative to the mechanical calibration pose, while leg position actions are
-applied around the extended standing offset. Wheel velocity actions use scale
-`8.0`.
+applied around the extended standing offset. Wheel velocity actions use signed
+scales `[12.0, -12.0]`.
 For Gazebo deployment, it also applies a startup warmup, action clipping, and a
 low-pass filter before publishing to `ros2_control`. The defaults are:
 
 - `warmup_duration_s=3.0`
-- `default_leg_positions=[2.268928, 0.0, 2.268928, 0.0]`
-- `action_leg_positions=[2.268928, 0.872665, 2.268928, 0.872665]`
-- `leg_action_scale=[0.35, 0.75, 0.35, 0.75]`
+- `default_leg_positions=[2.268928, 0.087266, 2.268928, 0.087266]`
+- `action_leg_positions=[2.268828, 0.616101, 2.268828, 0.616101]`
+- `leg_action_scale=[0.18, 1.0, 0.18, 1.0]`
 - `leg_action_clip=1.0`
 - `wheel_action_clip=1.0`
 - `action_filter_alpha=0.35`

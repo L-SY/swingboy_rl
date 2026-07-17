@@ -16,14 +16,16 @@ from std_msgs.msg import Float32MultiArray, Float64MultiArray
 
 HIP_LOWER_LIMIT = 0.0
 HIP_UPPER_LIMIT = math.radians(130.0)
-KNEE_LOWER_LIMIT = 0.0
+HIP_COMMAND_UPPER_LIMIT = HIP_UPPER_LIMIT - 1.0e-4
+KNEE_LOWER_LIMIT = math.radians(5.0)
 KNEE_UPPER_LIMIT = math.radians(290.0)
-STAND_KNEE_POSITION = math.radians(50.0)
+STAND_KNEE_POSITION = math.radians(35.3)
 DEFAULT_LEG_POSITIONS = [HIP_UPPER_LIMIT, KNEE_LOWER_LIMIT, HIP_UPPER_LIMIT, KNEE_LOWER_LIMIT]
-ACTION_LEG_POSITIONS = [HIP_UPPER_LIMIT, STAND_KNEE_POSITION, HIP_UPPER_LIMIT, STAND_KNEE_POSITION]
-LEG_ACTION_SCALES = [0.35, 0.75, 0.35, 0.75]
+ACTION_LEG_POSITIONS = [HIP_COMMAND_UPPER_LIMIT, STAND_KNEE_POSITION, HIP_COMMAND_UPPER_LIMIT, STAND_KNEE_POSITION]
+LEG_ACTION_SCALES = [0.18, 1.0, 0.18, 1.0]
+WHEEL_ACTION_SCALES = [12.0, -12.0]
 LEG_JOINT_LOWER_LIMITS = [HIP_LOWER_LIMIT, KNEE_LOWER_LIMIT, HIP_LOWER_LIMIT, KNEE_LOWER_LIMIT]
-LEG_JOINT_UPPER_LIMITS = [HIP_UPPER_LIMIT, KNEE_UPPER_LIMIT, HIP_UPPER_LIMIT, KNEE_UPPER_LIMIT]
+LEG_JOINT_UPPER_LIMITS = [HIP_COMMAND_UPPER_LIMIT, KNEE_UPPER_LIMIT, HIP_COMMAND_UPPER_LIMIT, KNEE_UPPER_LIMIT]
 
 
 def quat_conjugate(q: Sequence[float]) -> np.ndarray:
@@ -72,7 +74,7 @@ class SwingboyRlController(Node):
         self.declare_parameter("policy_path", "")
         self.declare_parameter("publish_rate_hz", 50.0)
         self.declare_parameter("leg_action_scale", LEG_ACTION_SCALES)
-        self.declare_parameter("wheel_action_scale", 8.0)
+        self.declare_parameter("wheel_action_scale", WHEEL_ACTION_SCALES)
         self.declare_parameter("leg_action_clip", 1.0)
         self.declare_parameter("wheel_action_clip", 1.0)
         self.declare_parameter("action_filter_alpha", 0.35)
@@ -97,7 +99,6 @@ class SwingboyRlController(Node):
 
         self.policy_path = self.get_parameter("policy_path").value
         self.rate_hz = float(self.get_parameter("publish_rate_hz").value)
-        self.wheel_action_scale = float(self.get_parameter("wheel_action_scale").value)
         self.leg_action_clip = max(0.0, float(self.get_parameter("leg_action_clip").value))
         self.wheel_action_clip = max(0.0, float(self.get_parameter("wheel_action_clip").value))
         self.action_filter_alpha = float(np.clip(float(self.get_parameter("action_filter_alpha").value), 0.0, 1.0))
@@ -111,6 +112,9 @@ class SwingboyRlController(Node):
         self.wheel_joint_order = list(self.get_parameter("wheel_joint_order").value)
         self.observation_joint_order = list(self.get_parameter("observation_joint_order").value)
         self.leg_action_scale = self._float_array_or_scalar_parameter("leg_action_scale", len(self.leg_joint_order))
+        self.wheel_action_scale = self._float_array_or_scalar_parameter(
+            "wheel_action_scale", len(self.wheel_joint_order)
+        )
         self.default_leg_positions = self._float_array_parameter("default_leg_positions", len(self.leg_joint_order))
         self.action_leg_positions = self._float_array_parameter("action_leg_positions", len(self.leg_joint_order))
         self.leg_joint_lower_limits = self._float_array_parameter("leg_joint_lower_limits", len(self.leg_joint_order))
@@ -153,6 +157,7 @@ class SwingboyRlController(Node):
         self.output_name = None
         self.expected_observation_size = 206
         self._load_policy()
+        self.observation_history = None
 
         period = 1.0 / max(self.rate_hz, 1.0)
         self.timer = self.create_timer(period, self.update)
@@ -187,7 +192,13 @@ class SwingboyRlController(Node):
             return ""
         policy_path = os.path.expanduser(str(self.policy_path))
         if os.path.isdir(policy_path):
-            for name in ("swingboy_track_latest.onnx", "swingboy_rough_latest.onnx", "policy.onnx"):
+            for name in (
+                "v0.1.0-legacy/swingboy_track_latest.onnx",
+                "v0.1.0-legacy/swingboy_rough_latest.onnx",
+                "swingboy_track_latest.onnx",
+                "swingboy_rough_latest.onnx",
+                "policy.onnx",
+            ):
                 candidate = os.path.join(policy_path, name)
                 if os.path.isfile(candidate):
                     self.get_logger().info(f"Resolved policy directory to ONNX file: {candidate}")
@@ -242,6 +253,8 @@ class SwingboyRlController(Node):
             return "base linear velocity, no height scan"
         if self.expected_observation_size == 27:
             return "no base linear velocity, no height scan"
+        if self.expected_observation_size == 108:
+            return "4-frame history, no base linear velocity, no height scan"
         return "unknown layout"
 
     def on_joint_state(self, msg: JointState):
@@ -251,10 +264,9 @@ class SwingboyRlController(Node):
             if index < len(msg.velocity):
                 self.joint_vel[name] = msg.velocity[index]
         if self.warmup_start_leg_positions is None and all(name in self.joint_pos for name in self.leg_joint_order):
-            self.warmup_start_leg_positions = np.array(
-                [self.joint_pos[name] for name in self.leg_joint_order],
-                dtype=np.float32,
-            )
+            # Gazebo may publish one stale all-zero joint-state frame while applying ros2_control initial values.
+            # Deployment starts from the calibrated pose, so warmup must hold that pose instead of replaying it.
+            self.warmup_start_leg_positions = self.default_leg_positions.copy()
             self.start_monotonic = time.monotonic()
 
     def on_cmd_vel(self, msg: Twist):
@@ -301,7 +313,7 @@ class SwingboyRlController(Node):
     def build_observation(self) -> np.ndarray:
         joint_pos = self.joint_vector(self.joint_pos) - self.default_joint_vector()
         joint_vel = self.joint_vector(self.joint_vel)
-        if self.expected_observation_size == 27:
+        if self.expected_observation_size in (27, 108):
             terms = [
                 self.base_ang_vel_body,
                 self.projected_gravity,
@@ -331,7 +343,20 @@ class SwingboyRlController(Node):
                 self.previous_action,
                 self.height_scan,
             ]
-        obs = np.concatenate(terms).astype(np.float32)
+        if self.expected_observation_size == 108:
+            if self.observation_history is None:
+                self.observation_history = [
+                    [np.array(term, dtype=np.float32, copy=True) for _ in range(4)] for term in terms
+                ]
+            else:
+                for history, term in zip(self.observation_history, terms):
+                    history.pop(0)
+                    history.append(np.array(term, dtype=np.float32, copy=True))
+            obs = np.concatenate(
+                [np.concatenate(history) for history in self.observation_history]
+            ).astype(np.float32)
+        else:
+            obs = np.concatenate(terms).astype(np.float32)
         if obs.shape[0] != self.expected_observation_size:
             raise RuntimeError(
                 f"Unexpected observation size {obs.shape[0]}, expected {self.expected_observation_size} "
@@ -392,18 +417,8 @@ class SwingboyRlController(Node):
         self.publish_raw_commands(leg_targets, wheel_targets)
 
     def publish_warmup_commands(self):
-        elapsed = time.monotonic() - self.start_monotonic
-        if self.warmup_duration_s <= 0.0:
-            alpha = 1.0
-        else:
-            alpha = float(np.clip(elapsed / self.warmup_duration_s, 0.0, 1.0))
-
-        if self.warmup_start_leg_positions is None:
-            start = np.array([self.joint_pos.get(name, 0.0) for name in self.leg_joint_order], dtype=np.float32)
-        else:
-            start = self.warmup_start_leg_positions
-
-        leg_targets = (1.0 - alpha) * start + alpha * self.action_leg_positions
+        # Hold the measured calibration pose until the RL policy is enabled.
+        leg_targets = self.default_leg_positions
         wheel_targets = np.zeros(2, dtype=np.float32)
         self.publish_raw_commands(leg_targets, wheel_targets)
         self.previous_action = np.zeros(6, dtype=np.float32)

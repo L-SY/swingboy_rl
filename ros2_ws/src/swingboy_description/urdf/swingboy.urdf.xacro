@@ -6,7 +6,7 @@
   <xacro:property name="mesh_scale" value="0.001 0.001 0.001"/>
   <xacro:property name="hip_lower" value="0.0"/>
   <xacro:property name="hip_upper" value="2.2689280276"/>
-  <xacro:property name="knee_lower" value="0.0"/>
+  <xacro:property name="knee_lower" value="0.0872664626"/>
   <xacro:property name="knee_upper" value="5.0614548308"/>
 
   <xacro:macro name="mesh_visual_collision" params="mesh xyz rpy">
@@ -26,70 +26,70 @@
 
   <link name="base_link">
     <inertial>
-      <origin xyz="0.023194022 -0.005961871 0.034984685" rpy="0 0 0"/>
-      <mass value="5.6642671"/>
-      <inertia ixx="0.017013427" iyy="0.030038808" izz="0.026847641"
-               ixy="-6.5806e-05" iyz="-3.289e-06" ixz="-0.006626058"/>
+      <origin xyz="0.01619223 -0.00590077 0.03338208" rpy="0 0 0"/>
+      <mass value="1.837"/>
+      <inertia ixx="0.00538627411" iyy="0.0100421857" izz="0.00930933319"
+               ixy="-1.68124636e-05" iyz="-2.24216996e-06" ixz="-0.00215963550"/>
     </inertial>
     <xacro:mesh_visual_collision mesh="base_link.stl" xyz="0 0 0" rpy="0 0 0"/>
   </link>
 
   <link name="left_hip_knee_link">
     <inertial>
-      <origin xyz="-0.022752868 -0.03439328 0.107589179" rpy="0 0 0"/>
-      <mass value="2.86443343"/>
-      <inertia ixx="0.033592999" iyy="0.035048815" izz="0.003078528"
-               ixy="1.4913e-05" iyz="-8.147e-06" ixz="0.006785996"/>
+      <origin xyz="-0.02277463 -0.03418610 0.10739150" rpy="0 0 0"/>
+      <mass value="1.293"/>
+      <inertia ixx="0.0144272682" iyy="0.0150014080" izz="0.00144285072"
+               ixy="1.13209663e-05" iyz="-1.70128250e-05" ixz="0.00289102751"/>
     </inertial>
     <xacro:mesh_visual_collision mesh="left_hip_knee_link.stl" xyz="0.046391 0.120369 0.016" rpy="0 0 0"/>
   </link>
 
   <link name="right_hip_knee_link">
     <inertial>
-      <origin xyz="-0.022728092 0.034458387 0.107287114" rpy="0 0 0"/>
-      <mass value="2.85424007"/>
-      <inertia ixx="0.033520469" iyy="0.034981628" izz="0.003071209"
-               ixy="-1.5361e-05" iyz="1.3569e-05" ixz="0.006784224"/>
+      <origin xyz="-0.02272135 0.03434838 0.10691437" rpy="0 0 0"/>
+      <mass value="1.293"/>
+      <inertia ixx="0.0144777946" iyy="0.0150598797" izz="0.00144426730"
+               ixy="-9.30836692e-06" iyz="1.09849902e-05" ixz="0.00290762418"/>
     </inertial>
     <xacro:mesh_visual_collision mesh="right_hip_knee_link.stl" xyz="0.046391 -0.110369 0.016" rpy="0 0 0"/>
   </link>
 
   <link name="left_knee_wheel_link">
     <inertial>
-      <origin xyz="0.110174318 0.004394033 -0.154769611" rpy="0 0 0"/>
-      <mass value="1.81513349"/>
-      <inertia ixx="0.007996185" iyy="0.011928148" izz="0.004366643"
-               ixy="9.5645e-05" iyz="-0.000128395" ixz="0.005170151"/>
+      <origin xyz="0.10188940 0.00541451 -0.14304925" rpy="0 0 0"/>
+      <mass value="0.765"/>
+      <inertia ixx="0.00399113509" iyy="0.00596078671" izz="0.00215670103"
+               ixy="2.04041233e-05" iyz="-2.67962665e-05" ixz="0.00261767321"/>
     </inertial>
     <xacro:mesh_visual_collision mesh="left_knee_wheel_link.stl" xyz="0.092067 0.120369 -0.199206" rpy="0 0 0"/>
   </link>
 
   <link name="right_knee_wheel_link">
     <inertial>
-      <origin xyz="0.122975677 -0.00389461 -0.172485992" rpy="0 0 0"/>
-      <mass value="1.42195298"/>
-      <inertia ixx="0.004595036" iyy="0.006799078" izz="0.002630821"
-               ixy="-5.2158e-05" iyz="7.2823e-05" ixz="0.002835196"/>
+      <origin xyz="0.10266849 -0.00539423 -0.14402274" rpy="0 0 0"/>
+      <mass value="0.765"/>
+      <inertia ixx="0.00388606061" iyy="0.00582047846" izz="0.00212276094"
+               ixy="-1.87402153e-05" iyz="2.64224649e-05" ixz="0.00255420843"/>
     </inertial>
     <xacro:mesh_visual_collision mesh="right_knee_wheel_link.stl" xyz="0.092132 -0.110369 -0.199192" rpy="0 0 0"/>
   </link>
 
   <link name="left_wheel_link">
     <inertial>
-      <origin xyz="5.02e-07 -0.003160987 -4.26e-07" rpy="0 0 0"/>
-      <mass value="0.935458605"/>
-      <inertia ixx="0.001224995" iyy="0.002338299" izz="0.001225494"
-               ixy="0" iyz="0" ixz="-2.03e-07"/>
+      <origin xyz="-1.61359426e-07 -0.00316087763 -9.15398555e-07" rpy="0 0 0"/>
+      <mass value="0.233"/>
+      <inertia ixx="0.000304882351" iyy="0.000581979599" izz="0.000305007970"
+               ixy="-1.83366311e-10" iyz="-1.44718863e-10" ixz="-5.19940117e-08"/>
     </inertial>
     <xacro:mesh_visual_collision mesh="left_wheel.stl" xyz="-0.047147 0.142869 -0.003709" rpy="0 0 0"/>
   </link>
 
   <link name="right_wheel_link">
     <inertial>
-      <origin xyz="5.17e-07 0.003161084 -1.64e-07" rpy="0 0 0"/>
-      <mass value="0.935458605"/>
-      <inertia ixx="0.001225095" iyy="0.002338299" izz="0.001225394"
-               ixy="0" iyz="0" ixz="-4.31e-07"/>
+      <origin xyz="-6.79156997e-08 0.00316097940 -7.39187110e-07" rpy="0 0 0"/>
+      <mass value="0.233"/>
+      <inertia ixx="0.000304906894" iyy="0.000581979596" izz="0.000304983433"
+               ixy="1.69998270e-10" iyz="1.59049762e-10" ixz="-1.08810117e-07"/>
     </inertial>
     <xacro:mesh_visual_collision mesh="right_wheel.stl" xyz="-0.047141 -0.132869 -0.003737" rpy="0 0 0"/>
   </link>
@@ -99,7 +99,7 @@
     <parent link="base_link"/>
     <child link="left_hip_knee_link"/>
     <axis xyz="0 1 0"/>
-    <limit lower="${hip_lower}" upper="${hip_upper}" effort="80.0" velocity="20.0"/>
+    <limit lower="${hip_lower}" upper="${hip_upper}" effort="30.5" velocity="15.49"/>
     <dynamics damping="0.08" friction="0.0"/>
   </joint>
 
@@ -108,7 +108,7 @@
     <parent link="base_link"/>
     <child link="right_hip_knee_link"/>
     <axis xyz="0 1 0"/>
-    <limit lower="${hip_lower}" upper="${hip_upper}" effort="80.0" velocity="20.0"/>
+    <limit lower="${hip_lower}" upper="${hip_upper}" effort="30.5" velocity="15.49"/>
     <dynamics damping="0.08" friction="0.0"/>
   </joint>
 
@@ -117,7 +117,7 @@
     <parent link="left_hip_knee_link"/>
     <child link="left_knee_wheel_link"/>
     <axis xyz="0 -1 0"/>
-    <limit lower="${knee_lower}" upper="${knee_upper}" effort="80.0" velocity="20.0"/>
+    <limit lower="${knee_lower}" upper="${knee_upper}" effort="30.5" velocity="15.49"/>
     <dynamics damping="0.08" friction="0.0"/>
   </joint>
 
@@ -126,7 +126,7 @@
     <parent link="right_hip_knee_link"/>
     <child link="right_knee_wheel_link"/>
     <axis xyz="0 -1 0"/>
-    <limit lower="${knee_lower}" upper="${knee_upper}" effort="80.0" velocity="20.0"/>
+    <limit lower="${knee_lower}" upper="${knee_upper}" effort="30.5" velocity="15.49"/>
     <dynamics damping="0.08" friction="0.0"/>
   </joint>
 
@@ -135,7 +135,7 @@
     <parent link="left_knee_wheel_link"/>
     <child link="left_wheel_link"/>
     <axis xyz="0 -1 0"/>
-    <limit effort="50.0" velocity="40.0"/>
+    <limit effort="19.94" velocity="24.18"/>
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
 
@@ -144,7 +144,7 @@
     <parent link="right_knee_wheel_link"/>
     <child link="right_wheel_link"/>
     <axis xyz="0 1 0"/>
-    <limit effort="50.0" velocity="40.0"/>
+    <limit effort="19.94" velocity="24.18"/>
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
 
@@ -182,7 +182,9 @@
           <param name="min">${hip_lower}</param>
           <param name="max">${hip_upper}</param>
         </command_interface>
-        <state_interface name="position"/>
+        <state_interface name="position">
+          <param name="initial_value">${hip_upper}</param>
+        </state_interface>
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
@@ -191,7 +193,9 @@
           <param name="min">${knee_lower}</param>
           <param name="max">${knee_upper}</param>
         </command_interface>
-        <state_interface name="position"/>
+        <state_interface name="position">
+          <param name="initial_value">${knee_lower}</param>
+        </state_interface>
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
@@ -200,7 +204,9 @@
           <param name="min">${hip_lower}</param>
           <param name="max">${hip_upper}</param>
         </command_interface>
-        <state_interface name="position"/>
+        <state_interface name="position">
+          <param name="initial_value">${hip_upper}</param>
+        </state_interface>
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
@@ -209,7 +215,9 @@
           <param name="min">${knee_lower}</param>
           <param name="max">${knee_upper}</param>
         </command_interface>
-        <state_interface name="position"/>
+        <state_interface name="position">
+          <param name="initial_value">${knee_lower}</param>
+        </state_interface>
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
@@ -218,7 +226,9 @@
           <param name="min">-40.0</param>
           <param name="max">40.0</param>
         </command_interface>
-        <state_interface name="position"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
@@ -227,7 +237,9 @@
           <param name="min">-40.0</param>
           <param name="max">40.0</param>
         </command_interface>
-        <state_interface name="position"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>

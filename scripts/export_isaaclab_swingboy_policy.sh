@@ -8,8 +8,6 @@ if [[ $# -lt 1 && -z "${CHECKPOINT:-}" ]]; then
 fi
 
 CHECKPOINT="${1:-${CHECKPOINT}}"
-ISAACLAB_DIR="${ISAACLAB_DIR:-/home/lsy/桌面/RL/IsaacLab}"
-ISAACLAB_CMD="${ISAACLAB_CMD:-/home/lsy/桌面/RL/env_isaaclab/bin/isaaclab}"
 TASK="${TASK:-Isaac-Velocity-Track-Swingboy-Play-v0}"
 DEVICE="${DEVICE:-cuda:0}"
 NUM_ENVS="${NUM_ENVS:-16}"
@@ -17,7 +15,10 @@ EXPORT_TIMEOUT_SEC="${EXPORT_TIMEOUT_SEC:-90}"
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "${SCRIPT_DIR}/.." && pwd)
-POLICY_OUT="${POLICY_OUT:-${REPO_ROOT}/policies/swingboy_track_latest.onnx}"
+RL_ROOT="${RL_ROOT:-$(dirname "${REPO_ROOT}")}"
+ISAACLAB_DIR="${ISAACLAB_DIR:-${RL_ROOT}/IsaacLab}"
+ISAACLAB_CMD="${ISAACLAB_CMD:-${RL_ROOT}/env_isaaclab/bin/isaaclab}"
+POLICY_OUT="${POLICY_OUT:-${REPO_ROOT}/policies/v0.1.0-legacy/swingboy_track_latest.onnx}"
 
 if [[ ! -f "${CHECKPOINT}" ]]; then
   echo "Checkpoint does not exist: ${CHECKPOINT}" >&2
