@@ -13,12 +13,14 @@ swingboy_rl/
 ├── sim/mujoco/           MuJoCo Playground source and learning tools
 ├── ros2_ws/src/          ROS 2 description, bringup, controller, and tests
 ├── policies/<version>/   Versioned deployment policies and metadata
+├── note/                 Interactive readiness and experiment notebook
 ├── scripts/              Training, export, play, and diagnostic commands
 ├── third_party/          Reproducible upstream version pins
 └── ref/                  Selected open-source reference files
 ```
 
 Start with [the training notes](docs/training.md), the
+[interactive project notebook](note/README.md), the
 [Isaac Lab integration](sim/isaaclab/README.md), or the
 [ROS 2 workspace](ros2_ws/README.md). Exact upstream revisions are recorded in
 [`third_party/versions.yaml`](third_party/versions.yaml).
