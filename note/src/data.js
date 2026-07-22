@@ -1,66 +1,83 @@
 export const checklistSections = [
   {
-    id: "mechanics",
-    title: "机械与几何",
-    icon: "Ruler",
+    id: "requirements",
+    title: "需求与验收",
+    icon: "ClipboardCheck",
     items: [
-      { id: "link-mass", title: "Link 质量实测", detail: "base / hip / knee / wheel 已分别称重", done: true },
-      { id: "inertia", title: "惯量与质心复核", detail: "惯量由 STL 封闭面与实测质量估算，仍需记录质心实测误差", done: false },
-      { id: "mesh-scale", title: "STL 尺寸与单位", detail: "URDF 使用 0.001 缩放，需与实物关键尺寸交叉检查", done: true },
-      { id: "collision", title: "碰撞几何逐 Link 检查", detail: "当前使用原始 STL + convex decomposition，需检查接触点和穿透", done: false },
-      { id: "self-collision", title: "自碰撞策略", detail: "当前关闭 self collision，需确认 hip 与 wheel 机械干涉如何表达", done: false },
-      { id: "wheel-radius", title: "轮子半径与轴距", detail: "建立实测值、URDF 值和接触半径对照", done: false }
+      { id: "requirement-scope", title: "功能与使用场景已定义", detail: "站立、速度跟踪、转向、地形、抗扰与跌倒恢复的边界清晰", done: false },
+      { id: "requirement-metrics", title: "需求已量化为验收指标", detail: "速度、坡度、站立高度、恢复时间、功耗和安全限制都有可测阈值", done: false }
     ]
   },
   {
-    id: "actuation",
-    title: "关节与执行器",
-    icon: "Gauge",
-    items: [
-      { id: "joint-axis", title: "关节方向与符号", detail: "hip: +Y，knee: -Y，左右轮方向相反", done: true },
-      { id: "joint-limit", title: "机械限位", detail: "hip 0°–130°，knee 5°–290°，wheel continuous", done: true },
-      { id: "calibration-pose", title: "实机上电校准姿态", detail: "hip 130° / knee 5°，必须与 policy 启动流程一致", done: true },
-      { id: "motor-envelope", title: "力矩–转速包络", detail: "目前只记录峰值，需增加连续值、温度降额与驱动器限流", done: false },
-      { id: "pd-gains", title: "PD 与实机一致", detail: "腿部 P=30 / D=1；轮子速度驱动 damping=1", done: true },
-      { id: "latency", title: "延迟与控制周期实测", detail: "需记录传感、ROS 2、总线、驱动器和执行总延迟", done: false }
-    ]
-  },
-  {
-    id: "simulation",
-    title: "仿真一致性",
+    id: "concept",
+    title: "简化仿真",
     icon: "Boxes",
     items: [
-      { id: "static-pose", title: "静态姿态与地面关系", detail: "确认 reset 后无穿透、无过大去穿透速度", done: true },
-      { id: "gravity-sag", title: "零动作重力下沉测试", detail: "分别测试关闭和开启 PD 时的静态行为", done: false },
-      { id: "contact-material", title: "轮地摩擦与恢复系数", detail: "需用斜坡/滚动/制动实验标定，而不是只做大范围随机化", done: false },
-      { id: "control-rate", title: "物理与 policy 频率", detail: "sim dt=0.005 s，decimation=4，policy=50 Hz", done: true },
-      { id: "single-env", title: "单环境可视化检查", detail: "检查 action、contact force、reset 和坐标系", done: true },
-      { id: "sim-crosscheck", title: "Isaac / MuJoCo / Gazebo 交叉检查", detail: "同一姿态、PD 和指令下对比关节响应", done: false }
+      { id: "concept-dynamics", title: "简化机构与基础控制可行", detail: "用简化刚体、重力和 PD/状态机验证自由度、站立姿态与轮腿协同", done: true },
+      { id: "collision-matrix", title: "简化碰撞模型与碰撞对矩阵", detail: "使用简化碰撞箱，明确 hip-wheel 等 Link 对是否允许自碰撞", done: false }
     ]
   },
   {
-    id: "mdp",
-    title: "MDP 与学习问题",
+    id: "selection",
+    title: "选型与优化",
+    icon: "Gauge",
+    items: [
+      { id: "actuator-envelope", title: "执行器工况包络满足需求", detail: "核对峰值/连续力矩、转速、功率、热容量、驱动器限流与电池压降", done: false },
+      { id: "geometry-optimization", title: "结构参数已联合优化", detail: "腿长、质心、减速比、电机位置与安全余量已确定", done: true }
+    ]
+  },
+  {
+    id: "production",
+    title: "设计与生产",
+    icon: "Ruler",
+    items: [
+      { id: "manufacturing-package", title: "生产资料与可制造性已审查", detail: "加工图、BOM、装配基准、线束空间、公差和维修性完整", done: true },
+      { id: "design-freeze", title: "机械与控制关键接口已冻结", detail: "关节方向、零位、限位、减速比、编码器与电气接口有版本记录", done: true }
+    ]
+  },
+  {
+    id: "calibration",
+    title: "装配与标定",
+    icon: "SlidersHorizontal",
+    items: [
+      { id: "physical-measurements", title: "实物质量、质心与关节参数已测量", detail: "记录 Link 质量、质心、零位、限位、方向、减速比、回差与摩擦", done: false },
+      { id: "power-on-calibration", title: "上电标定与执行器台架测试完成", detail: "形成可重复的校零流程，实测力矩、转速、PD、限流和延迟", done: false }
+    ]
+  },
+  {
+    id: "model-alignment",
+    title: "URDF 对齐",
+    icon: "Bot",
+    items: [
+      { id: "urdf-alignment", title: "URDF 与实物动力学对齐", detail: "关节轴、零位、限位、质量、惯量、质心、摩擦与碰撞模型一致", done: false },
+      { id: "model-regression", title: "模型回归测试通过", detail: "静态姿态、零动作重力、单关节阶跃、轮子滚动和接触测试可重复", done: false }
+    ]
+  },
+  {
+    id: "control-training",
+    title: "控制与训练",
     icon: "BrainCircuit",
     items: [
-      { id: "task-minimum", title: "最小任务可学性", detail: "先用默认站立姿态、平地、零速度验证 PPO 能学会平衡", done: false },
-      { id: "obs-deployable", title: "Actor 观测可部署", detail: "当前 actor 无 base linear velocity / scan，其余量可从 IMU 和编码器获得", done: true },
-      { id: "action-contract", title: "Action 符号、尺度与偏置", detail: "需生成自动对照表，并在 Isaac 与 ROS 2 中逐项比较", done: false },
-      { id: "reward-unit-test", title: "Reward 逐项单元测试", detail: "对理想站立、趴地、空转、倾倒和高速漂移状态计算奖励", done: false },
-      { id: "terminal-audit", title: "Terminal 无奖励漏洞", detail: "当前 hip/knee link 接触立即终止，需验证是否会阻断起立探索", done: false },
-      { id: "reset-contract", title: "Reset 与实机启动一致", detail: "当前训练 knee 约 33.5°–35.3°，实机校准 knee=5°，尚未闭环", done: false }
+      { id: "control-contract", title: "控制接口契约已冻结", detail: "Observation、Action、关节顺序、单位、符号、控制频率和基础 PD 在各端一致", done: false },
+      { id: "rl-training-gate", title: "RL 从最小可学任务逐步扩展", detail: "先单姿态、平地、无随机化过拟合，再增加指令、扰动、地形与域随机化", done: false }
     ]
   },
   {
-    id: "training",
-    title: "训练与验收",
+    id: "simulation-acceptance",
+    title: "仿真验收",
     icon: "ChartNoAxesCombined",
     items: [
-      { id: "overfit-one", title: "单姿态过拟合测试", detail: "关闭噪声、随机化和 push，验证能否快速学会站立", done: false },
-      { id: "seed-repeat", title: "多随机种子复现", detail: "至少 3 个 seed，不以单次最好 checkpoint 作为结论", done: false },
-      { id: "eval-suite", title: "固定验收集", detail: "站立、低速、制动、转向、push、摩擦变化和摔倒恢复", done: false },
-      { id: "checkpoint-video", title: "Checkpoint 曲线与视频对齐", detail: "保存关键奖励跃迁节点的 deterministic rollout", done: true },
-      { id: "deployment-gate", title: "实机部署门槛", detail: "动作、速度、力矩、姿态和看门狗限制必须先在 Gazebo/Sim 通过", done: false }
+      { id: "evaluation-suite", title: "固定验收集和多种子复现通过", detail: "站立、速度、制动、转向、push、摩擦变化与跌倒恢复均有曲线和视频证据", done: false },
+      { id: "cross-sim-gate", title: "Sim-to-sim 与部署包验证通过", detail: "Isaac 策略在 MuJoCo/Gazebo 的关节响应一致，policy 版本、归一化和配置可追溯", done: false }
+    ]
+  },
+  {
+    id: "deployment",
+    title: "实机部署",
+    icon: "Save",
+    items: [
+      { id: "deployment-safety", title: "实机安全链完整", detail: "具备悬空、保护架和落地三级测试，以及力矩/速度/姿态限制、看门狗和急停", done: false },
+      { id: "deployment-feedback", title: "实机数据已回流模型", detail: "实测零位、摩擦、延迟、力矩与失败轨迹反馈到 URDF、仿真和验收集", done: false }
     ]
   }
 ];
@@ -264,6 +281,21 @@ export const referenceRepos = [
 ];
 
 export const initialExperiments = [
+  {
+    id: "exp-ddt-1000",
+    date: "2026-07-17",
+    name: "Swingboy DDT 最新基线",
+    simulator: "Isaac Lab / DDT_Lab",
+    task: "DDT-Velocity-Flat-Swingboy-v0",
+    run: "model_1000.pt",
+    seed: "42",
+    status: "已失败",
+    hypothesis: "使用 Tita 的 NP3O 配置与 hip/knee 接触终止条件，可学会 Swingboy 平地平衡和速度跟踪。",
+    changes: "从 model_600 续训到 1000 iteration，保留 4096 环境、NP3O 历史观测和 DDT Tita 奖励结构。",
+    result: "平均 episode 长度从 20.6 增长到 861.8，但 mean reward 峰值 55.6 后回落至 12.9；线速度误差 0.95、yaw 误差 1.10，未通过平衡和跟踪验收。",
+    next: "暂停继续堆迭代，回到 URDF 对齐、reset 契约、action 映射和最小可学任务验证。",
+    evidence: "DDT_Lab/logs/np3o/swingboy_tita_hip_contact_alive/2026-07-17_09-47-08/"
+  },
   {
     id: "exp-ddt-700",
     date: "2026-07-17",

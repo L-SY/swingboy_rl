@@ -76,8 +76,8 @@ const iconSet = {
 };
 
 const navItems = [
-  ["overview", "LayoutDashboard", "准备总览"],
-  ["checklist", "ClipboardCheck", "前期检查"],
+  ["overview", "LayoutDashboard", "项目总览"],
+  ["checklist", "ClipboardCheck", "项目流程"],
   ["baseline", "Bot", "机器人基线"],
   ["mdp", "BrainCircuit", "MDP 设计"],
   ["references", "Library", "参考仓库"],
@@ -141,12 +141,22 @@ function loadState() {
       ...stored,
       checklist: { ...defaults.checklist, ...stored.checklist },
       baseline: { ...defaults.baseline, ...stored.baseline },
-      experiments: Array.isArray(stored.experiments) ? stored.experiments : defaults.experiments,
-      decisions: Array.isArray(stored.decisions) ? stored.decisions : defaults.decisions,
+      experiments: mergeSeededRecords(defaults.experiments, stored.experiments),
+      decisions: mergeSeededRecords(defaults.decisions, stored.decisions),
     };
   } catch {
     return defaults;
   }
+}
+
+function mergeSeededRecords(seeded, stored) {
+  if (!Array.isArray(stored)) return seeded;
+  const seededIds = new Set(seeded.map((item) => item.id));
+  const storedById = new Map(stored.map((item) => [item.id, item]));
+  return [
+    ...seeded.map((item) => ({ ...item, ...storedById.get(item.id) })),
+    ...stored.filter((item) => !seededIds.has(item.id)),
+  ];
 }
 
 let state = loadState();
@@ -203,7 +213,7 @@ function renderShell() {
           `).join("")}
         </nav>
         <div class="workflow-rail">
-          <div class="rail-heading">训练准入</div>
+          <div class="rail-heading">工程阶段</div>
           ${checklistSections.map((section, index) => {
             const stats = checklistStats(section);
             return `
@@ -217,7 +227,7 @@ function renderShell() {
         <div class="repo-state">
           <span>LOCAL NOTE</span>
           <strong>schema / v1</strong>
-          <small>2026-07-17</small>
+          <small>2026-07-22</small>
         </div>
       </aside>
       <main class="workspace">
@@ -301,7 +311,7 @@ function renderOverview() {
   const unresolved = state.decisions.filter((decision) => decision.state === "未解决").length;
   const latest = state.experiments.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
   return `
-    ${pageHeader("SWINGBOY / READINESS", "训练准备总览", "机器人建模、MDP 设计和实验证据", globalActions())}
+    ${pageHeader("SWINGBOY / LIFECYCLE", "项目进展总览", "从需求定义、结构设计到 RL 训练与实机部署", globalActions())}
     <div class="page-divider"></div>
     <div class="scroll-area overview-page">
       <section class="project-strip">
@@ -318,25 +328,25 @@ function renderOverview() {
           </div>
         </div>
         <div class="readiness-dial" style="--progress:${total.percent * 3.6}deg">
-          <div><strong>${total.percent}%</strong><span>准备度</span></div>
+          <div><strong>${total.percent}%</strong><span>完成度</span></div>
         </div>
       </section>
 
       <section class="metric-row">
-        <article class="metric"><span>已核对</span><strong>${total.done}</strong><small>/ ${total.total} 项</small></article>
-        <article class="metric"><span>待核对</span><strong class="warning-text">${pending}</strong><small>前期项</small></article>
+        <article class="metric"><span>已通过</span><strong>${total.done}</strong><small>/ ${total.total} 项门槛</small></article>
+        <article class="metric"><span>待完成</span><strong class="warning-text">${pending}</strong><small>工程项</small></article>
         <article class="metric"><span>未解决风险</span><strong class="danger-text">${unresolved}</strong><small>决策项</small></article>
         <article class="metric"><span>参考基线</span><strong>${referenceRepos.length}</strong><small>个仓库</small></article>
       </section>
 
       <section class="content-section">
-        <div class="section-title"><div><span>READINESS BY DOMAIN</span><h2>分项准备度</h2></div><button class="text-button" data-go="checklist">查看全部 ${icon("ChevronRight")}</button></div>
+        <div class="section-title"><div><span>PROJECT GATES</span><h2>工程流程与准入门槛</h2></div><button class="text-button" data-go="checklist">查看全部 ${icon("ChevronRight")}</button></div>
         <div class="readiness-table">
           ${checklistSections.map((section) => {
             const stats = checklistStats(section);
             return `<button class="readiness-row" data-go="checklist" data-scroll="${section.id}">
               <span class="domain-icon">${icon(section.icon)}</span>
-              <span class="domain-name"><strong>${section.title}</strong><small>${stats.done} / ${stats.total} 已核对</small></span>
+              <span class="domain-name"><strong>${section.title}</strong><small>${stats.done} / ${stats.total} 已通过</small></span>
               <span class="progress-track"><i style="width:${stats.percent}%" data-tone="${statusTone(stats.percent)}"></i></span>
               <strong class="mono">${stats.percent}%</strong>
               ${icon("ChevronRight", "row-chevron")}
@@ -377,7 +387,7 @@ function decisionRow(decision) {
 function renderChecklist() {
   const total = checklistStats();
   return `
-    ${pageHeader("PRE-FLIGHT / CHECKLIST", "前期检查", `${total.done} / ${total.total} 项已核对，完成度 ${total.percent}%`, `
+    ${pageHeader("PROJECT / LIFECYCLE", "项目流程", `${total.done} / ${total.total} 项准入门槛已通过，完成度 ${total.percent}%`, `
       <div class="segmented-control" role="group" aria-label="检查项筛选">
         <button data-check-filter="all">全部</button><button data-check-filter="pending">待核对</button><button data-check-filter="done">已完成</button>
       </div>`)}
@@ -393,7 +403,7 @@ function renderChecklist() {
         const visibleItems = section.items.filter((item) => checklistFilter === "all" || (checklistFilter === "done" ? state.checklist[item.id]?.done : !state.checklist[item.id]?.done));
         if (!visibleItems.length) return "";
         return `<section class="check-section" id="section-${section.id}">
-          <header><span class="domain-icon">${icon(section.icon)}</span><div><h2>${section.title}</h2><p>${stats.done} / ${stats.total} 已核对</p></div><span class="progress-track"><i style="width:${stats.percent}%" data-tone="${statusTone(stats.percent)}"></i></span><strong class="mono">${stats.percent}%</strong></header>
+          <header><span class="domain-icon">${icon(section.icon)}</span><div><h2>${section.title}</h2><p>${stats.done} / ${stats.total} 已通过</p></div><span class="progress-track"><i style="width:${stats.percent}%" data-tone="${statusTone(stats.percent)}"></i></span><strong class="mono">${stats.percent}%</strong></header>
           <div class="check-items">
             ${visibleItems.map((item) => {
               const itemState = state.checklist[item.id] || { done: false, note: "" };

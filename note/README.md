@@ -1,7 +1,9 @@
 # Swingboy RL Notes
 
-Interactive project notebook for robot-model validation, MDP design review,
-reference-repository comparison, and experiment tracking.
+Interactive project notebook organized around the full robot lifecycle: project
+requirements, concept simulation, actuator selection, production, calibration,
+URDF alignment, RL training, simulation acceptance, and deployment. It also
+contains MDP reviews, reference-repository comparisons, and experiment records.
 
 ```bash
 cd note
